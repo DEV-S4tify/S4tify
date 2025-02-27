@@ -1,0 +1,805 @@
+{
+    "date": "2025-02-26 22:00:00",
+    "entries": [
+        {
+            "rank": 1,
+            "title": "REBEL HEART",
+            "artist": "IVE(아이브)",
+            "lastPos": 1,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/560/32560807.jpg?type=r256Fll&v=20250226170757"
+        },
+        {
+            "rank": 2,
+            "title": "나는 반딧불",
+            "artist": "황가람",
+            "lastPos": 2,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/223/32223565.jpg?type=r256Fll&v=20241021184120"
+        },
+        {
+            "rank": 3,
+            "title": "HOME SWEET HOME (feat. 태양, 대성)",
+            "artist": "G-DRAGON",
+            "lastPos": 3,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/312/32312776.jpg?type=r256Fll&v=20241127165131"
+        },
+        {
+            "rank": 4,
+            "title": "TOO BAD (feat. Anderson .Paak)",
+            "artist": "G-DRAGON",
+            "lastPos": 18,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/999/32999599.jpg?type=r256Fll&v=20250225132007"
+        },
+        {
+            "rank": 5,
+            "title": "APT.",
+            "artist": "로제 (ROSÉ)",
+            "lastPos": 4,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/218/32218786.jpg?type=r256Fll&v=20241122104456"
+        },
+        {
+            "rank": 6,
+            "title": "Whiplash",
+            "artist": "aespa",
+            "lastPos": 5,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/223/32223740.jpg?type=r256Fll&v=20241021143055"
+        },
+        {
+            "rank": 7,
+            "title": "ATTITUDE",
+            "artist": "IVE(아이브)",
+            "lastPos": 6,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/560/32560807.jpg?type=r256Fll&v=20250226170757"
+        },
+        {
+            "rank": 8,
+            "title": "오늘만 I LOVE YOU",
+            "artist": "BOYNEXTDOOR",
+            "lastPos": 7,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/514/32514192.jpg?type=r256Fll&v=20250107135036"
+        },
+        {
+            "rank": 9,
+            "title": "모르시나요 (PROD. 로코베리)",
+            "artist": "조째즈",
+            "lastPos": 9,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/514/32514782.jpg?type=r256Fll&v=20250107142015"
+        },
+        {
+            "rank": 10,
+            "title": "HAPPY",
+            "artist": "DAY6(데이식스)",
+            "lastPos": 8,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/043/31043036.jpg?type=r256Fll&v=20240402145726"
+        },
+        {
+            "rank": 11,
+            "title": "DRAMA",
+            "artist": "G-DRAGON",
+            "lastPos": 30,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/999/32999599.jpg?type=r256Fll&v=20250225132007"
+        },
+        {
+            "rank": 12,
+            "title": "Drowning",
+            "artist": "WOODZ",
+            "lastPos": 10,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/009/113/9113175.jpg?type=r256Fll&v=20240224095510"
+        },
+        {
+            "rank": 13,
+            "title": "미치게 그리워서",
+            "artist": "황가람",
+            "lastPos": 11,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/727/32727811.jpg?type=r256Fll&v=20250207134146"
+        },
+        {
+            "rank": 14,
+            "title": "PO￦ER",
+            "artist": "G-DRAGON",
+            "lastPos": 12,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/261/32261031.jpg?type=r256Fll&v=20250225135901"
+        },
+        {
+            "rank": 15,
+            "title": "toxic till the end",
+            "artist": "로제 (ROSÉ)",
+            "lastPos": 13,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/400/32400568.jpg?type=r256Fll&v=20250221151010"
+        },
+        {
+            "rank": 16,
+            "title": "내 이름 맑음",
+            "artist": "QWER",
+            "lastPos": 14,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/057/32057155.jpg?type=r256Fll&v=20241206120538"
+        },
+        {
+            "rank": 17,
+            "title": "한 페이지가 될 수 있게",
+            "artist": "DAY6(데이식스)",
+            "lastPos": 15,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/003/117/3117381.jpg?type=r256Fll&v=20230331153414"
+        },
+        {
+            "rank": 18,
+            "title": "Die With A Smile",
+            "artist": "Lady Gaga",
+            "lastPos": 17,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/002/32002405.jpg?type=r256Fll&v=20240816150503"
+        },
+        {
+            "rank": 19,
+            "title": "DRIP",
+            "artist": "BABYMONSTER",
+            "lastPos": 16,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/243/32243530.jpg?type=r256Fll&v=20250117110816"
+        },
+        {
+            "rank": 20,
+            "title": "Supernova",
+            "artist": "aespa",
+            "lastPos": 19,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/577/31577945.jpg?type=r256Fll&v=20240828151204"
+        },
+        {
+            "rank": 21,
+            "title": "슬픈 초대장",
+            "artist": "순순희(지환)",
+            "lastPos": 20,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/559/30559604.jpg?type=r256Fll&v=20250205161023"
+        },
+        {
+            "rank": 22,
+            "title": "내게 사랑이 뭐냐고 물어본다면",
+            "artist": "로이킴",
+            "lastPos": 23,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/208/32208455.jpg?type=r256Fll&v=20241017182358"
+        },
+        {
+            "rank": 23,
+            "title": "너와의 모든 지금",
+            "artist": "재쓰비 (JAESSBEE)",
+            "lastPos": 21,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/278/32278592.jpg?type=r256Fll&v=20241108193138"
+        },
+        {
+            "rank": 24,
+            "title": "고민중독",
+            "artist": "QWER",
+            "lastPos": 22,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/194/31194405.jpg?type=r256Fll&v=20240507111203"
+        },
+        {
+            "rank": 25,
+            "title": "Welcome to the Show",
+            "artist": "DAY6(데이식스)",
+            "lastPos": 24,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/043/31043036.jpg?type=r256Fll&v=20240402145726"
+        },
+        {
+            "rank": 26,
+            "title": "비의 랩소디",
+            "artist": "임재현",
+            "lastPos": 25,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/416/30416945.jpg?type=r256Fll&v=20231206102040"
+        },
+        {
+            "rank": 27,
+            "title": "Love wins all",
+            "artist": "아이유(IU)",
+            "lastPos": 26,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/796/30796788.jpg?type=r256Fll&v=20240223101020"
+        },
+        {
+            "rank": 28,
+            "title": "ExtraL (feat. Doechii)",
+            "artist": "제니 (JENNIE)",
+            "lastPos": 42,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/889/32889603.jpg?type=r256Fll&v=20250226174821"
+        },
+        {
+            "rank": 29,
+            "title": "UP (KARINA Solo)",
+            "artist": "aespa",
+            "lastPos": 27,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/195/32195099.jpg?type=r256Fll&v=20241014115556"
+        },
+        {
+            "rank": 30,
+            "title": "Mantra",
+            "artist": "제니 (JENNIE)",
+            "lastPos": 28,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/201/32201028.jpg?type=r256Fll&v=20241016152943"
+        },
+        {
+            "rank": 31,
+            "title": "나는 아픈 건 딱 질색이니까",
+            "artist": "(여자)아이들",
+            "lastPos": 29,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/792/30792280.jpg?type=r256Fll&v=20240219144550"
+        },
+        {
+            "rank": 32,
+            "title": "어떻게 이별까지 사랑하겠어, 널 사랑하는 거지",
+            "artist": "AKMU(악뮤)",
+            "lastPos": 31,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/003/199/3199865.jpg?type=r256Fll&v=20230307022055"
+        },
+        {
+            "rank": 33,
+            "title": "소나기",
+            "artist": "이클립스(ECLIPSE)",
+            "lastPos": 32,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/359/31359951.jpg?type=r256Fll&v=20240729140740"
+        },
+        {
+            "rank": 34,
+            "title": "STRESS",
+            "artist": "청하",
+            "lastPos": 53,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/864/32864060.jpg?type=r256Fll&v=20250220152438"
+        },
+        {
+            "rank": 35,
+            "title": "TAKE ME",
+            "artist": "G-DRAGON",
+            "lastPos": 61,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/999/32999599.jpg?type=r256Fll&v=20250225132007"
+        },
+        {
+            "rank": 36,
+            "title": "가르쳐줘",
+            "artist": "한해",
+            "lastPos": 66,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/725/32725385.jpg?type=r256Fll&v=20250206170403"
+        },
+        {
+            "rank": 37,
+            "title": "그대만 있다면 (여름날 우리 X 너드커넥션 (Nerd Connection))",
+            "artist": "너드커넥션(Nerd Connection)",
+            "lastPos": 33,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/010/174/10174038.jpg?type=r256Fll&v=20240516111050"
+        },
+        {
+            "rank": 38,
+            "title": "number one girl",
+            "artist": "로제 (ROSÉ)",
+            "lastPos": 34,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/314/32314961.jpg?type=r256Fll&v=20241122135346"
+        },
+        {
+            "rank": 39,
+            "title": "천상연",
+            "artist": "이창섭",
+            "lastPos": 35,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/878/30878664.jpg?type=r256Fll&v=20240220123436"
+        },
+        {
+            "rank": 40,
+            "title": "How Sweet",
+            "artist": "NewJeans",
+            "lastPos": 36,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/512/31512201.jpg?type=r256Fll&v=20240524110922"
+        },
+        {
+            "rank": 41,
+            "title": "earthquake",
+            "artist": "지수 (JISOO)",
+            "lastPos": 50,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/877/32877792.jpg?type=r256Fll&v=20250217104346"
+        },
+        {
+            "rank": 42,
+            "title": "무제(無題) (Untitled, 2014)",
+            "artist": "G-DRAGON",
+            "lastPos": 39,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/002/017/2017080.jpg?type=r256Fll&v=20230331144409"
+        },
+        {
+            "rank": 43,
+            "title": "에피소드",
+            "artist": "이무진",
+            "lastPos": 37,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/483/30483267.jpg?type=r256Fll&v=20250205163525"
+        },
+        {
+            "rank": 44,
+            "title": "첫 만남은 계획대로 되지 않아",
+            "artist": "TWS(투어스)",
+            "lastPos": 38,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/624/30624437.jpg?type=r256Fll&v=20241206121620"
+        },
+        {
+            "rank": 45,
+            "title": "헤어지자 말해요",
+            "artist": "박재정",
+            "lastPos": 40,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/009/494/9494325.jpg?type=r256Fll&v=20230419175019"
+        },
+        {
+            "rank": 46,
+            "title": "IBELONGIIU",
+            "artist": "G-DRAGON",
+            "lastPos": 62,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/999/32999599.jpg?type=r256Fll&v=20250225132007"
+        },
+        {
+            "rank": 47,
+            "title": "Magnetic",
+            "artist": "아일릿(ILLIT)",
+            "lastPos": 43,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/069/31069538.jpg?type=r256Fll&v=20241125170731"
+        },
+        {
+            "rank": 48,
+            "title": "예뻤어",
+            "artist": "DAY6(데이식스)",
+            "lastPos": 41,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/001/779/1779662.jpg?type=r256Fll&v=20240129085632"
+        },
+        {
+            "rank": 49,
+            "title": "청춘만화",
+            "artist": "이무진",
+            "lastPos": 44,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/173/32173325.jpg?type=r256Fll&v=20250205163526"
+        },
+        {
+            "rank": 50,
+            "title": "해야 (HEYA)",
+            "artist": "IVE(아이브)",
+            "lastPos": 46,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/538/31538864.jpg?type=r256Fll&v=20240429154136"
+        },
+        {
+            "rank": 51,
+            "title": "I AM",
+            "artist": "IVE(아이브)",
+            "lastPos": 47,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/009/334/9334427.jpg?type=r256Fll&v=20240225013026"
+        },
+        {
+            "rank": 52,
+            "title": "인사",
+            "artist": "범진",
+            "lastPos": 48,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/006/747/6747334.jpg?type=r256Fll&v=20231211112557"
+        },
+        {
+            "rank": 53,
+            "title": "봄여름가을겨울 (Still Life)",
+            "artist": "BIGBANG (빅뱅)",
+            "lastPos": 45,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/007/442/7442898.jpg?type=r256Fll&v=20240220011529"
+        },
+        {
+            "rank": 54,
+            "title": "보나마나 (BONAMANA)",
+            "artist": "G-DRAGON",
+            "lastPos": 71,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/999/32999599.jpg?type=r256Fll&v=20250225132007"
+        },
+        {
+            "rank": 55,
+            "title": "Small girl (feat. 도경수(D.O.))",
+            "artist": "이영지",
+            "lastPos": 49,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/862/31862729.jpg?type=r256Fll&v=20241024180424"
+        },
+        {
+            "rank": 56,
+            "title": "그대가 내 안에 박혔다(그내박)",
+            "artist": "순순희(기태)",
+            "lastPos": 52,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/008/746/8746607.jpg?type=r256Fll&v=20240224004013"
+        },
+        {
+            "rank": 57,
+            "title": "GYRO-DROP",
+            "artist": "G-DRAGON",
+            "lastPos": 81,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/999/32999599.jpg?type=r256Fll&v=20250225132007"
+        },
+        {
+            "rank": 58,
+            "title": "뱅뱅뱅 (BANG BANG BANG)",
+            "artist": "BIGBANG (빅뱅)",
+            "lastPos": 51,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/000/549/549037.jpg?type=r256Fll&v=20240127133601"
+        },
+        {
+            "rank": 59,
+            "title": "클락션 (Klaxon)",
+            "artist": "(여자)아이들",
+            "lastPos": 54,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/905/31905390.jpg?type=r256Fll&v=20240819114652"
+        },
+        {
+            "rank": 60,
+            "title": "살기 위해서",
+            "artist": "순순희",
+            "lastPos": 57,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/007/509/7509566.jpg?type=r256Fll&v=20230331101639"
+        },
+        {
+            "rank": 61,
+            "title": "Not Like Us",
+            "artist": "Kendrick Lamar",
+            "lastPos": 63,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/561/31561189.jpg?type=r256Fll&v=20240508040017"
+        },
+        {
+            "rank": 62,
+            "title": "내 삶의 반",
+            "artist": "임재현",
+            "lastPos": 56,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/599/32599773.jpg?type=r256Fll&v=20250117105545"
+        },
+        {
+            "rank": 63,
+            "title": "FANTASTIC BABY",
+            "artist": "BIGBANG (빅뱅)",
+            "lastPos": 55,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/000/313/313987.jpg?type=r256Fll&v=20240207162946"
+        },
+        {
+            "rank": 64,
+            "title": "너의 모든 순간",
+            "artist": "성시경",
+            "lastPos": 58,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/000/416/416823.jpg?type=r256Fll&v=20240127054540"
+        },
+        {
+            "rank": 65,
+            "title": "Storm",
+            "artist": "김보경(NEON)",
+            "lastPos": 60,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/696/32696597.jpg?type=r256Fll&v=20250123185729"
+        },
+        {
+            "rank": 66,
+            "title": "Supersonic",
+            "artist": "프로미스나인",
+            "lastPos": 59,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/992/31992010.jpg?type=r256Fll&v=20240812153650"
+        },
+        {
+            "rank": 67,
+            "title": "Love Hangover (feat. Dominic Fike)",
+            "artist": "제니 (JENNIE)",
+            "lastPos": 67,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/698/32698693.jpg?type=r256Fll&v=20250226174831"
+        },
+        {
+            "rank": 68,
+            "title": "첫눈처럼 너에게 가겠다",
+            "artist": "에일리(Ailee)",
+            "lastPos": 64,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/001/773/1773336.jpg?type=r256Fll&v=20230331141841"
+        },
+        {
+            "rank": 69,
+            "title": "다정히 내 이름을 부르면",
+            "artist": "경서예지",
+            "lastPos": 65,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/005/880/5880633.jpg?type=r256Fll&v=20240216232008"
+        },
+        {
+            "rank": 70,
+            "title": "Beautiful Things",
+            "artist": "Benson Boone",
+            "lastPos": 70,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/779/30779021.jpg?type=r256Fll&v=20240122112543"
+        },
+        {
+            "rank": 71,
+            "title": "주저하는 연인들을 위해",
+            "artist": "잔나비",
+            "lastPos": 68,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/002/923/2923941.jpg?type=r256Fll&v=20240507111145"
+        },
+        {
+            "rank": 72,
+            "title": "아픈 추억은 사랑이 아니었기를",
+            "artist": "펀치 (Punch)",
+            "lastPos": 106,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/864/32864087.jpg?type=r256Fll&v=20250211174211"
+        },
+        {
+            "rank": 73,
+            "title": "Hype Boy",
+            "artist": "NewJeans",
+            "lastPos": 69,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/007/795/7795016.jpg?type=r256Fll&v=20240221013522"
+        },
+        {
+            "rank": 74,
+            "title": "Armageddon",
+            "artist": "aespa",
+            "lastPos": 74,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/577/31577945.jpg?type=r256Fll&v=20240828151204"
+        },
+        {
+            "rank": 75,
+            "title": "붉은 노을",
+            "artist": "BIGBANG (빅뱅)",
+            "lastPos": 72,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/000/149/149083.jpg?type=r256Fll&v=20240128212648"
+        },
+        {
+            "rank": 76,
+            "title": "네모네모",
+            "artist": "YENA(최예나)",
+            "lastPos": 73,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/151/32151913.jpg?type=r256Fll&v=20241206121713"
+        },
+        {
+            "rank": 77,
+            "title": "사건의 지평선",
+            "artist": "윤하",
+            "lastPos": 75,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/007/434/7434553.jpg?type=r256Fll&v=20240219231017"
+        },
+        {
+            "rank": 78,
+            "title": "미인(美人)",
+            "artist": "이예준",
+            "lastPos": 76,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/521/32521124.jpg?type=r256Fll&v=20250108153059"
+        },
+        {
+            "rank": 79,
+            "title": "Sticky",
+            "artist": "KISS OF LIFE",
+            "lastPos": 80,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/883/31883806.jpg?type=r256Fll&v=20240802104116"
+        },
+        {
+            "rank": 80,
+            "title": "사랑할 수밖에",
+            "artist": "볼빨간사춘기",
+            "lastPos": 78,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/451/30451566.jpg?type=r256Fll&v=20240227160510"
+        },
+        {
+            "rank": 81,
+            "title": "물론",
+            "artist": "허각",
+            "lastPos": 77,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/009/613/9613552.jpg?type=r256Fll&v=20240225095505"
+        },
+        {
+            "rank": 82,
+            "title": "취중고백",
+            "artist": "김민석",
+            "lastPos": 83,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/006/739/6739257.jpg?type=r256Fll&v=20231215200513"
+        },
+        {
+            "rank": 83,
+            "title": "청바지",
+            "artist": "부석순(SEVENTEEN)",
+            "lastPos": 79,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/520/32520658.jpg?type=r256Fll&v=20250221154529"
+        },
+        {
+            "rank": 84,
+            "title": "Ditto",
+            "artist": "NewJeans",
+            "lastPos": 86,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/008/500/8500274.jpg?type=r256Fll&v=20240223183518"
+        },
+        {
+            "rank": 85,
+            "title": "밤양갱",
+            "artist": "비비(BIBI)",
+            "lastPos": 87,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/864/30864083.jpg?type=r256Fll&v=20240610141946"
+        },
+        {
+            "rank": 86,
+            "title": "심(心)",
+            "artist": "DK(디셈버)",
+            "lastPos": 84,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/009/045/9045225.jpg?type=r256Fll&v=20240516111050"
+        },
+        {
+            "rank": 87,
+            "title": "사막에서 꽃을 피우듯",
+            "artist": "우디 (Woody)",
+            "lastPos": 89,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/010/042/10042234.jpg?type=r256Fll&v=20230717102032"
+        },
+        {
+            "rank": 88,
+            "title": "여전히 아름다운지",
+            "artist": "박진주",
+            "lastPos": 82,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/600/32600014.jpg?type=r256Fll&v=20250117171632"
+        },
+        {
+            "rank": 89,
+            "title": "SPOT! (feat. JENNIE)",
+            "artist": "지코 (ZICO)",
+            "lastPos": 88,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/511/31511885.jpg?type=r256Fll&v=20240429173328"
+        },
+        {
+            "rank": 90,
+            "title": "When I Get Old",
+            "artist": "Christopher",
+            "lastPos": 91,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/008/241/8241264.jpg?type=r256Fll&v=20240222104522"
+        },
+        {
+            "rank": 91,
+            "title": "Supernatural",
+            "artist": "NewJeans",
+            "lastPos": 95,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/031/851/31851676.jpg?type=r256Fll&v=20240621140647"
+        },
+        {
+            "rank": 92,
+            "title": "ETA",
+            "artist": "NewJeans",
+            "lastPos": 92,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/010/035/10035234.jpg?type=r256Fll&v=20240226054515"
+        },
+        {
+            "rank": 93,
+            "title": "녹아내려요",
+            "artist": "DAY6(데이식스)",
+            "lastPos": 98,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/076/32076760.jpg?type=r256Fll&v=20240902115307"
+        },
+        {
+            "rank": 94,
+            "title": "우리의 다정한 계절 속에 (Season of Memories)",
+            "artist": "여자친구(GFRIEND)",
+            "lastPos": 90,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/513/32513023.jpg?type=r256Fll&v=20250117155122"
+        },
+        {
+            "rank": 95,
+            "title": "밤편지",
+            "artist": "아이유(IU)",
+            "lastPos": 94,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/001/855/1855408.jpg?type=r256Fll&v=20230331142723"
+        },
+        {
+            "rank": 96,
+            "title": "...사랑했잖아...(2024)",
+            "artist": "고경표",
+            "lastPos": 97,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/290/32290518.jpg?type=r256Fll&v=20241113143505"
+        },
+        {
+            "rank": 97,
+            "title": "To. X",
+            "artist": "태연 (TAEYEON)",
+            "lastPos": 99,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/030/408/30408961.jpg?type=r256Fll&v=20231127143132"
+        },
+        {
+            "rank": 98,
+            "title": "별 떨어진다 (I Do)",
+            "artist": "도경수(D.O.)",
+            "lastPos": 96,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/010/232/10232861.jpg?type=r256Fll&v=20240426103353"
+        },
+        {
+            "rank": 99,
+            "title": "Igloo",
+            "artist": "KISS OF LIFE",
+            "lastPos": 93,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/166/32166646.jpg?type=r256Fll&v=20241115113517"
+        },
+        {
+            "rank": 100,
+            "title": "흰수염고래",
+            "artist": "유재석",
+            "lastPos": 85,
+            "isNew": false,
+            "image": "https://musicmeta-phinf.pstatic.net/album/032/698/32698532.jpg?type=r256Fll&v=20250221151016"
+        }
+    ]
+}

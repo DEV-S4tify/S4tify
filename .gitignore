@@ -1,3 +1,9 @@
+logs
+EvnetSim_producer.py
+eventsim-streaming
+data
+config
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
