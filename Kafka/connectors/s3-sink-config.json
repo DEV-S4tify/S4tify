@@ -10,21 +10,23 @@
         "topic.creation.default.cleanup.policy": "delete",
 
         "s3.region": "ap-northeast-2",
-        "s3.bucket.name": "data-lake-csvs",
+        "s3.bucket.name": "eventsim-log",
         "s3.part.size": "5242880",
         "flush.size": "1000",
-        "topics.dir": "eventsim_log",
         "storage.class": "io.confluent.connect.s3.storage.S3Storage",
 
         "locale": "ko_KR",
         "timezone": "Asia/Seoul",
 
         "format.class": "io.confluent.connect.s3.format.json.JsonFormat",
-        "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",
         "schema.compatibility": "NONE",
+        "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
+        "path.format": "'year'=YYYY/'month'=MM/'day'=dd/'hour'=HH",
+        "timestamp.extractor": "Record",
+        "timestamp.field": "ts",
 
-        "aws.access.key.id": "AKIAY6QVZEEFP24ATWQX",
-        "aws.secret.access.key": "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"
+        "aws.access.key.id": "AKIARWPFIPCEXA6NTJ67",
+        "aws.secret.access.key": "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"
     }
 }
 
