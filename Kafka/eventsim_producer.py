@@ -5,11 +5,11 @@ import time
 import subprocess
 from typing import Final
 
+import avro.schema
 from kafka.admin import NewTopic
 from kafka.errors import TopicAlreadyExistsError
 from kafka import KafkaAdminClient
 from kafka.producer import KafkaProducer
-
 
 # Kafka 패키지가 있는 경로 추가
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -17,6 +17,15 @@ sys.path.append(os.path.join(BASE_DIR, ".."))
 
 from Kafka.model.music_streaming import EventLog
 from Kafka.utils.docker_utils import get_container_id, is_container_running
+from Kafka.utils.schema_utils import register_schema, serialize_avro
+
+SCHEMA_REGISTRY_URL = "http://localhost:8081"
+
+# Avro 스키마 로드
+SCHEMA_PATH = os.path.join(BASE_DIR, "schemas", "music_streaming_schema.avsc")
+with open(SCHEMA_PATH, "r", encoding='utf-8') as schema_file:
+    schema_dict = json.load(schema_file)
+
 
 def create_topic(bootstrap_servers, name, partitions, replica=1):
     client = KafkaAdminClient(bootstrap_servers=bootstrap_servers)
@@ -45,7 +54,7 @@ def stream_docker_logs(container_name: str, producer: KafkaProducer, topic_name:
     )
 
     try:
-        while True:
+        while True: # sh script daemon으로 관리
             line = process.stdout.readline().strip()
             if not line:
                 if is_container_running(container_name):
@@ -60,11 +69,9 @@ def stream_docker_logs(container_name: str, producer: KafkaProducer, topic_name:
                 try:
                     log_data = json.loads(line)  # JSON 파싱
                     event = EventLog(**log_data)  # Pydantic 검증 및 변환
-                    
-                    key = str(event.ts).encode('utf-8')  # Kafka 메시지 key로 사용
-                    value = event.model_dump_json().encode('utf-8')  # JSON 변환 후 Kafka 전송
+                    value = event.model_dump_json().encode('utf-8')
 
-                    producer.send(topic_name, key=key, value=value)
+                    producer.send(topic_name, key=str(event.ts), value=value)
                     producer.flush()
                 except (json.JSONDecodeError, ValueError) as e:
                     print(f" JSON 변환 오류: {e}")  # 잘못된 JSON 무시
@@ -82,10 +89,15 @@ def main():
     bootstrap_servers = ['localhost:9092']
 
     create_topic(bootstrap_servers, topic_name, 4)
+    register_schema(SCHEMA_REGISTRY_URL, f'{topic_name}-value', schema_dict)
+
+    schema = avro.schema.parse(open(SCHEMA_PATH).read())
 
     producer = KafkaProducer(
         bootstrap_servers=bootstrap_servers,
-        client_id = "eventsim_music_streaming_producer"
+        client_id = "eventsim_music_streaming_producer",
+        key_serializer=lambda k: k.encode('utf-8') if k else None, 
+        value_serializer=lambda v: v
     )
 
     stream_docker_logs(container_name, producer, topic_name)
