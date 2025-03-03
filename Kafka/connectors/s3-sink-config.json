@@ -21,9 +21,10 @@
         "format.class": "io.confluent.connect.s3.format.json.JsonFormat",
         "schema.compatibility": "NONE",
         "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
-        "path.format": "'year'=YYYY/'month'=MM/'day'=dd/'hour'=HH",
-        "timestamp.extractor": "Record",
+        "path.format": "'year'=YYYY/'month'=MM/'day'=dd",
+        "timestamp.extractor": "RecordField",
         "timestamp.field": "ts",
+        "partition.duration.ms": "86400000", 
 
         "aws.access.key.id": "AKIARWPFIPCEXA6NTJ67",
         "aws.secret.access.key": "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"

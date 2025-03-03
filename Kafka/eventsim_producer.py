@@ -26,14 +26,14 @@ SCHEMA_PATH = os.path.join(BASE_DIR, "schemas", "music_streaming_schema.avsc")
 with open(SCHEMA_PATH, "r", encoding='utf-8') as schema_file:
     schema_dict = json.load(schema_file)
 
-
 def create_topic(bootstrap_servers, name, partitions, replica=1):
     client = KafkaAdminClient(bootstrap_servers=bootstrap_servers)
     try:
         topic = NewTopic(
-            name = name,
-            num_partitions = partitions,
-            replication_factor = replica)
+            name=name,
+            num_partitions=partitions,
+            replication_factor=replica
+        )
         client.create_topics([topic])
     except TopicAlreadyExistsError as e:
         print(e)
@@ -41,47 +41,58 @@ def create_topic(bootstrap_servers, name, partitions, replica=1):
     finally:
         client.close()
 
+def wait_for_container(container_name: str):
+    """컨테이너가 실행될 때까지 대기"""
+    while True:
+        container_id = get_container_id(container_name)
+        if container_id:
+            print(f"컨테이너 '{container_name}' 실행 확인 (ID: {container_id})")
+            return container_id
+        print(f"컨테이너 '{container_name}' 대기 중...")
+        time.sleep(3)
+
 def stream_docker_logs(container_name: str, producer: KafkaProducer, topic_name: str):
     """컨테이너 로그를 Kafka로 전송 (컨테이너 종료 감지)"""
-    container_id = get_container_id(container_name)
-    if not container_id:
-        raise RuntimeError(f"{container_name} 컨테이너가 실행 중이 아닙니다.")
-
-    # Docker logs 프로세스 시작
-    process = subprocess.Popen(
-        ["docker", "logs", "-f", container_id],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8'
-    )
-
     try:
-        while True: # sh script daemon으로 관리
-            line = process.stdout.readline().strip()
-            if not line:
-                if is_container_running(container_name):
-                    time.sleep(1)
-                    continue  # 빈 줄이면 무시
-                else:
-                    print('Eventserver down')
-                    break
-                
-            # JSON 로그만 필터링
-            if line.startswith("{") and line.endswith("}"):
-                try:
-                    log_data = json.loads(line)  # JSON 파싱
-                    event = EventLog(**log_data)  # Pydantic 검증 및 변환
-                    value = event.model_dump_json().encode('utf-8')
+        while True:
+            # 컨테이너 실행될 때까지 대기
+            container_id = wait_for_container(container_name)
 
-                    producer.send(topic_name, key=str(event.ts), value=value)
-                    producer.flush()
-                except (json.JSONDecodeError, ValueError) as e:
-                    print(f" JSON 변환 오류: {e}")  # 잘못된 JSON 무시
+            # Docker logs 프로세스 실행
+            process = subprocess.Popen(
+                ["docker", "logs", "-f", container_id],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8'
+            )
+
+            # 로그 수집
+            for line in process.stdout:
+                line = line.strip()
+                if not line:
+                    if is_container_running(container_name):
+                        time.sleep(1)
+                        continue  # 빈 줄이면 무시
+
+                # JSON 로그만 필터링
+                if line.startswith("{") and line.endswith("}"):
+                    try:
+                        log_data = json.loads(line)  # JSON 파싱
+                        event = EventLog(**log_data)  # Pydantic 검증 및 변환
+                        value = event.model_dump_json().encode('utf-8')
+
+                        producer.send(topic_name, key=str(event.ts), value=value)
+                        producer.flush()
+                    except (json.JSONDecodeError, ValueError) as e:
+                        print(f"JSON 변환 오류: {e}")  # 잘못된 JSON 무시
+
+            # 컨테이너가 종료된 경우 다시 실행될 때까지 대기
+            print(f"컨테이너 '{container_name}' 종료 감지. 재실행 대기 중...")
+            process.kill()
+            time.sleep(3)
+
     except KeyboardInterrupt:
-        pass
-    finally:
-        process.kill()  # 서브프로세스 종료
-        producer.close()
         print("Kafka Producer 종료")
-
+    finally:
+        producer.close()
 
 def main():
     topic_name: Final = 'eventsim_music_streaming'
@@ -95,8 +106,8 @@ def main():
 
     producer = KafkaProducer(
         bootstrap_servers=bootstrap_servers,
-        client_id = "eventsim_music_streaming_producer",
-        key_serializer=lambda k: k.encode('utf-8') if k else None, 
+        client_id="eventsim_music_streaming_producer",
+        key_serializer=lambda k: k.encode('utf-8') if k else None,
         value_serializer=lambda v: v
     )
 
