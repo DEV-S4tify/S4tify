@@ -4,6 +4,7 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 from pyspark.sql.functions import col
+import snowflake.connector
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # S4tify 루트 디렉토리
 sys.path.append(BASE_DIR)  # sys.path에 S4tify 추가
@@ -20,14 +21,12 @@ SNOWFLAKE_PROPERTIES = {
     "user": os.environ.get("SNOWFLAKE_USER"),
     "password": os.environ.get("SNOWFLAKE_PASSWORD"),
     "account": os.environ.get("SNOWFLAKE_ACCOUNT"),
-    "database": os.environ.get("SNOWFLAKE_DATABASE", "DATA_WAREHOUSE"),
+    "db": os.environ.get("SNOWFLAKE_DB", "DATA_WAREHOUSE"),
+    "warehouse": os.environ.get("SNOWFLAKE_WH", "COMPUTE_WH"),
     "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "raw_data",
-    "dtable": f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TABLE}",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
-    "url": f'jdbc:snowflake://{os.environ.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com/?warehouse=COMPUTE_WH'
+    "url": f'jdbc:snowflake://{os.environ.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com'
 }
-
-print(SNOWFLAKE_PROPERTIES['url'])
 
 
 S3_BUCKET = "s3a://eventsim-log"
@@ -56,31 +55,36 @@ def execute_snowflake_query(query, snowflake_options):
     Snowflake에서 SQL 쿼리를 실행하는 함수
     '''
     try:
-        spark.read \
-            .format ("jdbc") \
-            .options(**snowflake_options) \
-            .option("query", query) \
-            .load()
+        conn = snowflake.connector.connect(
+            user=os.environ.get("SNOWFLAKE_USER"),
+            password=os.environ.get("SNOWFLAKE_PASSWORD"),
+            account=os.environ.get("SNOWFLAKE_ACCOUNT"),
+            database=os.environ.get("SNOWFLAKE_DB", "DATA_WAREHOUSE"),
+            schema="raw_data",
+            warehouse=os.environ.get("SNOWFLAKE_WH", "COMPUTE_WH")
+        )
+        cur = conn.cursor()
+        cur.execute(query)
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("Query executed successfully.")
     except Exception as e:
-        print(f"Execute_snowflake_query: {e}")
+        print(f"Execute_snowflake_query Error: {e}")
 
-create_schema_sql = f"CREATE SCHEMA IF NOT EXISTS {SNOWFLAKE_SCHEMA};"
+# ** 테이블 생성
 
-# ** 테이블 생성성
 create_table_sql = f"""
-CREATE TABLE IF NOT EXISTS {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TABLE} (
+CREATE TABLE IF NOT EXISTS raw_data.EVENTSIM_LOG (
     song STRING,
     artist STRING,
     location STRING,
     sessionId INT,
     userId STRING,
-    ts BIGINT,
+    ts BIGINT
 );
 """
-
-execute_snowflake_query(create_schema_sql, SNOWFLAKE_PROPERTIES)
-execute_snowflake_query(create_schema_sql, SNOWFLAKE_PROPERTIES)
-
+execute_snowflake_query(create_table_sql, SNOWFLAKE_PROPERTIES)
 
 # Snowflake에서 MERGE 수행
 merge_sql = f"""
