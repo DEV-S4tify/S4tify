@@ -26,8 +26,8 @@
         "timestamp.field": "ts",
         "partition.duration.ms": "86400000", 
 
-        "aws.access.key.id": "AKIARWPFIPCEXA6NTJ67",
-        "aws.secret.access.key": "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"
+        "aws.access.key.id": "***",
+        "aws.secret.access.key": "***"
     }
 }
 
