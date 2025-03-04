@@ -1,8 +1,8 @@
 logs
 EvnetSim_producer.py
-eventsim-streaming
 data
 config
+.env
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
