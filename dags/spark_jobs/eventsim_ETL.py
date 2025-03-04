@@ -3,13 +3,13 @@ import sys
 from datetime import datetime
 
 from dotenv import load_dotenv
-from pyspark.sql.functions import col
-import snowflake.connector
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, LongType
+
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # S4tify 루트 디렉토리
 sys.path.append(BASE_DIR)  # sys.path에 S4tify 추가
 
-from dags.utils.spark_utils import spark_session_builder
+from dags.utils.spark_utils import spark_session_builder, execute_snowflake_query
 
 load_dotenv("../../.env") # 환경 변수 로드
 
@@ -42,62 +42,74 @@ day = date_obj.strftime("%d")
 # -------------------------------------------------
 spark = spark_session_builder("app")
 
+schema = StructType([
+    StructField("song", StringType(), True),
+    StructField("artist", StringType(), True),
+    StructField("location", StringType(), True),
+    StructField("sessionId", IntegerType(), True),
+    StructField("userId", IntegerType(), True),
+    StructField("ts", LongType(), True)  # Snowflake의 BIGINT에 맞게 LongType 사용
+])
+
 # S3에서 데이터 읽어오기
 # df = spark.read \
 #     .json(f"{S3_BUCKET}/topics/eventsim_music_streaming/year={year}/month={month}/day={day}/*.json")
 
-# df_clean = df.dropna(subset=["song", "artist"])
-# df_clean = df.wehre("song IS NOT NULL AND artist IS NOT NULL")
+data_path = os.path.abspath("./dags/data/*.json")
+print(f"Using path: {data_path}")
+df = spark.read \
+    .json(path=f'{data_path}', schema=schema)
 
-# --------------------------------------------------
-def execute_snowflake_query(query, snowflake_options):
-    '''
-    Snowflake에서 SQL 쿼리를 실행하는 함수
-    '''
-    try:
-        conn = snowflake.connector.connect(
-            user=os.environ.get("SNOWFLAKE_USER"),
-            password=os.environ.get("SNOWFLAKE_PASSWORD"),
-            account=os.environ.get("SNOWFLAKE_ACCOUNT"),
-            database=os.environ.get("SNOWFLAKE_DB", "DATA_WAREHOUSE"),
-            schema="raw_data",
-            warehouse=os.environ.get("SNOWFLAKE_WH", "COMPUTE_WH")
-        )
-        cur = conn.cursor()
-        cur.execute(query)
-        conn.commit()
-        cur.close()
-        conn.close()
-        print("Query executed successfully.")
-    except Exception as e:
-        print(f"Execute_snowflake_query Error: {e}")
+# df.printSchema()
+# df_length = df.count()
+# print(f"DataFrame row count: {df_length}")
 
-# ** 테이블 생성
+df_clean = df.dropna(subset=["song", "artist"]) # df_clean = df.wehre("song IS NOT NULL AND artist IS NOT NULL")
 
+# df_clean.show()
+# # DataFrame의 길이 출력
+# df_length = df_clean.count()
+# print(f"DataFrame row count: {df_length}")
+
+# -------------------CREATE TABLE--------------------
+# 테이블 생성
 create_table_sql = f"""
 CREATE TABLE IF NOT EXISTS raw_data.EVENTSIM_LOG (
     song STRING,
     artist STRING,
     location STRING,
     sessionId INT,
-    userId STRING,
+    userId INT,
     ts BIGINT
 );
 """
 execute_snowflake_query(create_table_sql, SNOWFLAKE_PROPERTIES)
+# -----------------------UPSERT----------------------
+# Snowflake TEMP 테이블에 데이터 적재
+df_clean.write \
+    .format("jdbc")\
+    .options(**SNOWFLAKE_PROPERTIES) \
+    .option("dbtable", f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE}") \
+    .mode("overwrite") \
+    .save()
+print("TEMP Table에 데이터 적재 완료")
 
 # Snowflake에서 MERGE 수행
 merge_sql = f"""
-    MERGE INTO {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TABLE} AS target
-    USING {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE} AS source
-    ON target.userId = source.userId AND target.ts = source.ts AND target.song = source.song
-    WHEN MATCHED THEN
-        UPDATE SET 
-            target.location = source.location,
-            target.sessionId = source.sessionId,
-    WHEN NOT MATCHED THEN
-        INSERT (song, artist, length, location, sessionId, userId, ts)
-        VALUES (source.song, source.artist, source.length, source.location, source.sessionId, source.userId, source.ts);
+MERGE INTO {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TABLE} AS target
+USING {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE} AS s
+    ON target.USERID = s."userId"
+        AND target.TS = s."ts"
+        AND target.SONG = s."song"
+WHEN MATCHED THEN
+    UPDATE SET 
+        target.LOCATION = s."location",
+        target.SESSIONID = s."sessionId"
+WHEN NOT MATCHED THEN
+    INSERT ("SONG", "ARTIST", "LOCATION", "SESSIONID", "USERID", "TS")
+    VALUES (s."song", s."artist", s."location", s."sessionId", s."userId", s."ts");
 """
+execute_snowflake_query(merge_sql, SNOWFLAKE_PROPERTIES)
+print("Merge 완료")
 
 spark.stop()
