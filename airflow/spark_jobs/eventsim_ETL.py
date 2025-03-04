@@ -27,8 +27,6 @@ SNOWFLAKE_PROPERTIES = {
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
     "url": f'jdbc:snowflake://{os.environ.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com'
 }
-
-
 S3_BUCKET = "s3a://eventsim-log"
 DATA_INTERVAL_START = '2025-02-28'
 
@@ -37,7 +35,6 @@ date_obj = datetime.strptime(DATA_INTERVAL_START, "%Y-%m-%d")
 year = date_obj.strftime("%Y")
 month = date_obj.strftime("%m")
 day = date_obj.strftime("%d")
-
 
 # -------------------------------------------------
 spark = spark_session_builder("app")

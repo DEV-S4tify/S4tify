@@ -21,7 +21,7 @@ def spark_session_builder(app_name: str) -> SparkSession:
         SparkSession
     """    
     return SparkSession.builder \
-        .appName("CheckJDBC") \
+        .appName(f"{app_name}") \
         .config("spark.jars", SPARK_JARS)\
         .config("spark.hadoop.fs.s3a.access.key", os.environ.get("AWS_ACCESS_KEY")) \
         .config("spark.hadoop.fs.s3a.secret.key", os.environ.get("AWS_SECRET_KEY")) \
