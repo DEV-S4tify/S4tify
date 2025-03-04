@@ -9,7 +9,7 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType, 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # S4tify 루트 디렉토리
 sys.path.append(BASE_DIR)  # sys.path에 S4tify 추가
 
-from dags.utils.spark_utils import spark_session_builder, execute_snowflake_query
+from airflow.dags.utils.spark_utils import spark_session_builder, execute_snowflake_query
 
 load_dotenv("../../.env") # 환경 변수 로드
 
