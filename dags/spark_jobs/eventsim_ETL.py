@@ -52,24 +52,11 @@ schema = StructType([
 ])
 
 # S3에서 데이터 읽어오기
-# df = spark.read \
-#     .json(f"{S3_BUCKET}/topics/eventsim_music_streaming/year={year}/month={month}/day={day}/*.json")
-
-data_path = os.path.abspath("./dags/data/*.json")
-print(f"Using path: {data_path}")
 df = spark.read \
-    .json(path=f'{data_path}', schema=schema)
+    .json(f"{S3_BUCKET}/topics/eventsim_music_streaming/year={year}/month={month}/day={day}/*.json")
 
-# df.printSchema()
-# df_length = df.count()
-# print(f"DataFrame row count: {df_length}")
-
-df_clean = df.dropna(subset=["song", "artist"]) # df_clean = df.wehre("song IS NOT NULL AND artist IS NOT NULL")
-
-# df_clean.show()
-# # DataFrame의 길이 출력
-# df_length = df_clean.count()
-# print(f"DataFrame row count: {df_length}")
+df_clean = df.dropna(subset=["song", "artist"]) 
+# df_clean = df.wehre("song IS NOT NULL AND artist IS NOT NULL")
 
 # -------------------CREATE TABLE--------------------
 # 테이블 생성
