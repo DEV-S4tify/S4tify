@@ -62,7 +62,6 @@ def data_crawling():
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 # 페이지 로딩 대기
                 time.sleep(2)
-                track_list = driver.find_elements(By.XPATH, '//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div[2]/div[2]')
                 song_lists = driver.find_elements(By.XPATH, '//*[@id="main"]//div[@role="row"]')
                 
                 print(len(song_lists))
@@ -73,11 +72,11 @@ def data_crawling():
                     artist_id = []
                     
                     #노래 정보가 있는 큰 div 가져오기
-                    track_info = song_lists[i].find_element(By.XPATH, f'//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div[2]/div[2]/div[{i}]')
+                    track_info = song_lists[i].find_element(By.XPATH, f'//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div/div[2]/div[2]/div[{i}]/div')
                     
                     #진짜 노래 정보가 있는 작은 div 가져오기 
-                    song_info = track_info.find_element(By.XPATH, f'//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div[2]/div[2]/div[{i}]/div/div[2]')
-                    song_title = song_info.find_element(By.XPATH, f'//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div[2]/div[2]/div[{i}]/div/div[2]/div/div')
+                    song_info = track_info.find_element(By.XPATH, f'//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div/div[2]/div[2]/div[{i}]/div/div[2]')
+                    song_title = song_info.find_element(By.XPATH, f'//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div/div[2]/div[2]/div[{i}]/div/div[2]/div/div')
                     print(song_title.text)
                     
                     global_top50_df.loc[i, 'title'] = song_title.text

@@ -65,7 +65,7 @@ def read_and_merge():
     column = ['artist_id', 'artist', 'genre', 'album', 'song_id', 'title']
     real_global_top50_artist_df = global_top50_artist_df[column]
     
-    real_global_top50_artist_df.to_csv(f"rspotify_join_data_{TODAY}.csv",encoding="utf-8-sig")
+    real_global_top50_artist_df.to_csv(f"data/spotify_join_data_{TODAY}.csv",encoding="utf-8-sig")
     
     #버킷 업로드
     load_s3_bucket()
