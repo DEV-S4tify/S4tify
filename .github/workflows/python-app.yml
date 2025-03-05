@@ -43,21 +43,21 @@ jobs:
           autopep8 --recursive --in-place --aggressive --aggressive . # autopep8를 사용하여 코드 포맷팅
           isort .  # isort를 사용하여 코드 포맷팅
       
-      # # 변경사항 Commit
-      # - name: Commit format changes
-      #   run: |
-      #     git config --local user.email "action@github.com"
-      #     git config --local user.name "Github Action"
-      #     git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-      #     git commit -am "Automated format fixes"
-      #     git push
+      # 변경사항 Commit
+      - name: Commit format changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Github Action"
+          git remote set-url origin https://x-access-token:${{ secrets.SECRET_TOKEN }}@github.com/${{ github.repository }}
+          git commit -am "Automated format fixes"
+          git push
           
-      # PR 생성
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          commit-message: Auto code format # 커밋 메시지
-          title: Fixes by format action # 풀 리퀘스트 제목
-          body: This is an auto-generated PR with fixes. # 풀 리퀘스트 본문
-          labels: automated pr # 레이블
-          branch: python-code-format-patches # 새로운 브랜치 이름
+      # # PR 생성
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v3
+      #   with:
+      #     commit-message: Auto code format # 커밋 메시지
+      #     title: Fixes by format action # 풀 리퀘스트 제목
+      #     body: This is an auto-generated PR with fixes. # 풀 리퀘스트 본문
+      #     labels: automated pr # 레이블
+      #     branch: python-code-format-patches # 새로운 브랜치 이름
