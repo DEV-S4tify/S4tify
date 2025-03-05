@@ -1,21 +1,23 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-import json
 import csv
-from bugs import ChartData, BugsChartType, BugsChartPeriod
+import json
+from datetime import datetime, timedelta
+
+from airflow.operators.python import PythonOperator
+from bugs import BugsChartPeriod, BugsChartType, ChartData
+
+from airflow import DAG
 
 # 파일 경로
 JSON_PATH = "/opt/airflow/dags/files/bugs_chart.json"
 CSV_PATH = "/opt/airflow/dags/files/bugs_chart.csv"
 
+
 # 1. Bugs 차트 데이터 가져오기 및 JSON 저장
 def fetch_bugs_chart():
     chart = ChartData(
-        chartType=BugsChartType.All, 
-        chartPeriod=BugsChartPeriod.Realtime, 
-        fetch=True
-    )
+        chartType=BugsChartType.All,
+        chartPeriod=BugsChartPeriod.Realtime,
+        fetch=True)
 
     chart_data = {
         "date": chart.date.strftime("%Y-%m-%d %H:%M:%S"),
@@ -26,10 +28,10 @@ def fetch_bugs_chart():
                 "artist": entry.artist,
                 "lastPos": entry.lastPos,
                 "peakPos": entry.peakPos,
-                "image": entry.image
+                "image": entry.image,
             }
             for entry in chart.entries
-        ]
+        ],
     }
 
     # JSON 저장
@@ -37,6 +39,7 @@ def fetch_bugs_chart():
         json.dump(chart_data, f, ensure_ascii=False, indent=4)
 
     print(f"✅ JSON 저장 완료: {JSON_PATH}")
+
 
 # 2. JSON → CSV 변환
 def convert_json_to_csv():
@@ -52,6 +55,7 @@ def convert_json_to_csv():
             writer.writerow(entry)
 
     print(f"✅ CSV 변환 완료: {CSV_PATH}")
+
 
 # DAG 설정
 default_args = {

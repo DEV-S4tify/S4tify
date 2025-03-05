@@ -1,9 +1,11 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-import json
 import csv
+import json
+from datetime import datetime, timedelta
+
 import requests
+from airflow.operators.python import PythonOperator
+
+from airflow import DAG
 
 # 멜론 차트 API 정보
 _APP_VERSION = "6.5.8.1"
@@ -15,6 +17,7 @@ _CHART_API_URL = f"https://m2.melon.com/m6/chart/ent/songChartList.json?cpId={_C
 JSON_PATH = "/opt/airflow/data/melon_chart.json"
 CSV_PATH = "/opt/airflow/data/melon_chart.csv"
 
+
 # 1. 멜론 차트 데이터 가져오기
 def fetch_melon_chart():
     headers = {"User-Agent": _USER_AGENT}
@@ -24,7 +27,7 @@ def fetch_melon_chart():
         raise Exception(f"멜론 API 호출 실패: {response.status_code}")
 
     data = response.json()
-    
+
     # 필요한 데이터만 추출
     chart_data = {
         "date": f"{data['response']['RANKDAY']} {data['response']['RANKHOUR']}:00",
@@ -34,12 +37,14 @@ def fetch_melon_chart():
                 "title": song["SONGNAME"],
                 "artist": song["ARTISTLIST"][0]["ARTISTNAME"],
                 "lastPos": int(song["PASTRANK"]),
-                "peakPos": int(song.get("PEAKRANK", song["CURRANK"])),  # peakPos 없으면 현재 순위로 설정
+                "peakPos": int(
+                    song.get("PEAKRANK", song["CURRANK"])
+                ),  # peakPos 없으면 현재 순위로 설정
                 "isNew": song["RANKTYPE"] == "NEW",
-                "image": song["ALBUMIMG"]
+                "image": song["ALBUMIMG"],
             }
             for song in data["response"]["SONGLIST"]
-        ]
+        ],
     }
 
     # JSON 파일로 저장
@@ -48,12 +53,20 @@ def fetch_melon_chart():
 
     print(f"✅ JSON 저장 완료: {JSON_PATH}")
 
+
 # 2. JSON → CSV 변환
 def convert_json_to_csv():
     with open(JSON_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    fields = ["rank", "title", "artist", "lastPos", "peakPos", "isNew", "image"]
+    fields = [
+        "rank",
+        "title",
+        "artist",
+        "lastPos",
+        "peakPos",
+        "isNew",
+        "image"]
 
     with open(CSV_PATH, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fields)
@@ -62,6 +75,7 @@ def convert_json_to_csv():
             writer.writerow(entry)
 
     print(f"✅ CSV 변환 완료: {CSV_PATH}")
+
 
 # DAG 설정
 default_args = {

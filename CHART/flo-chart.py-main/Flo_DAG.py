@@ -1,13 +1,16 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-import json
 import csv
+import json
+from datetime import datetime, timedelta
+
+from airflow.operators.python import PythonOperator
 from flo import ChartData  # flo.py 모듈 import
+
+from airflow import DAG
 
 # 파일 경로
 JSON_PATH = "/opt/airflow/dags/files/flo_chart.json"
 CSV_PATH = "/opt/airflow/dags/files/flo_chart.csv"
+
 
 # 1. FLO 차트 데이터 가져오기 및 JSON 저장
 def fetch_flo_chart():
@@ -22,10 +25,10 @@ def fetch_flo_chart():
                 "artist": entry.artist,
                 "lastPos": entry.lastPos,
                 "isNew": entry.isNew,
-                "image": entry.image
+                "image": entry.image,
             }
             for entry in chart.entries
-        ]
+        ],
     }
 
     # JSON 저장
@@ -33,6 +36,7 @@ def fetch_flo_chart():
         json.dump(chart_data, f, ensure_ascii=False, indent=4)
 
     print(f"✅ JSON 저장 완료: {JSON_PATH}")
+
 
 # 2. JSON → CSV 변환
 def convert_json_to_csv():
@@ -48,6 +52,7 @@ def convert_json_to_csv():
             writer.writerow(entry)
 
     print(f"✅ CSV 변환 완료: {CSV_PATH}")
+
 
 # DAG 설정
 default_args = {

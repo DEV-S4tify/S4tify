@@ -1,6 +1,6 @@
 import genie
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     chart = genie.ChartData(chartPeriod=genie.GenieChartPeriod.Monthly)
     print(chart.date)
 

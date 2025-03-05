@@ -1,10 +1,12 @@
-import json
 import csv
+import json
+
 from genie import ChartData, GenieChartPeriod  # genie.py 모듈 import
 
 # 파일 경로
 JSON_PATH = "genie_chart.json"
 CSV_PATH = "genie_chart.csv"
+
 
 # Genie 차트 데이터 가져오기 및 JSON 저장
 def fetch_genie_chart():
@@ -19,10 +21,10 @@ def fetch_genie_chart():
                 "artist": entry.artist,
                 "peakPos": entry.peakPos,
                 "lastPos": entry.lastPos,
-                "image": entry.image
+                "image": entry.image,
             }
             for entry in chart.entries
-        ]
+        ],
     }
 
     # JSON 저장
@@ -30,6 +32,7 @@ def fetch_genie_chart():
         json.dump(chart_data, f, ensure_ascii=False, indent=4)
 
     print(f"✅ JSON 저장 완료: {JSON_PATH}")
+
 
 # JSON → CSV 변환
 def convert_json_to_csv():
@@ -45,6 +48,7 @@ def convert_json_to_csv():
             writer.writerow(entry)
 
     print(f"✅ CSV 변환 완료: {CSV_PATH}")
+
 
 if __name__ == "__main__":
     fetch_genie_chart()

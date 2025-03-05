@@ -1,9 +1,12 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-import json
 import csv
+import json
+from datetime import datetime, timedelta
+
+from airflow.operators.python import PythonOperator
 from vibe import ChartData  # vibe.py 모듈 import
+
+from airflow import DAG
+
 
 # Vibe 차트 데이터를 가져와 JSON으로 저장하는 함수
 def fetch_vibe_chart():
@@ -18,10 +21,10 @@ def fetch_vibe_chart():
                 "artist": entry.artist,
                 "lastPos": entry.lastPos,
                 "isNew": entry.isNew,
-                "image": entry.image
+                "image": entry.image,
             }
             for entry in chart.entries
-        ]
+        ],
     }
 
     # JSON 파일 저장
@@ -31,6 +34,7 @@ def fetch_vibe_chart():
 
     print(f"✅ JSON 저장 완료: {JSON_PATH}")
     return JSON_PATH
+
 
 # JSON을 CSV로 변환하는 함수
 def convert_json_to_csv():
@@ -51,6 +55,7 @@ def convert_json_to_csv():
 
     print(f"✅ CSV 변환 완료: {CSV_PATH}")
     return CSV_PATH
+
 
 # DAG 설정
 default_args = {

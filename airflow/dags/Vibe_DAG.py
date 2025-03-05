@@ -1,12 +1,14 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-import json
 import csv
+import json
+from datetime import datetime, timedelta
+
 import snowflake.connector
 from airflow.hooks.base_hook import BaseHook
-from vibe import ChartData  # vibe.py 모듈 import
+from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from vibe import ChartData  # vibe.py 모듈 import
+
+from airflow import DAG
 
 # 파일 경로 및 S3 버킷 정보
 TODAY = datetime.now().strftime("%Y%m%d")
@@ -16,12 +18,16 @@ S3_BUCKET = "de5-s4tify"
 S3_JSON_KEY = f"raw_data/vibe_chart/vibe_chart_{TODAY}.json"
 S3_CSV_KEY = f"raw_data/vibe_chart/vibe_chart_{TODAY}.csv"
 
+
 # AWS S3 업로드 함수
 def upload_to_s3():
     s3_hook = S3Hook(aws_conn_id="S4tify_S3")  # Airflow Connection ID 사용
     file_name = CSV_PATH.split("/")[-1]
-    s3_hook.load_file(filename=CSV_PATH, bucket_name=S3_BUCKET, key=file_name, replace=True)
+    s3_hook.load_file(
+        filename=CSV_PATH, bucket_name=S3_BUCKET, key=file_name, replace=True
+    )
     print(f"✅ S3 업로드 완료: s3://{S3_BUCKET}/{file_name}")
+
 
 """
 # Snowflake 저장 함수
@@ -54,6 +60,7 @@ def save_to_snowflake():
     print("✅ Snowflake 저장 완료")
 """
 
+
 # Vibe 차트 데이터를 가져와 JSON으로 저장하는 함수
 def fetch_vibe_chart():
     chart = ChartData(fetch=True)
@@ -67,10 +74,10 @@ def fetch_vibe_chart():
                 "artist": entry.artist,
                 "lastPos": entry.lastPos,
                 "isNew": entry.isNew,
-                "image": entry.image
+                "image": entry.image,
             }
             for entry in chart.entries
-        ]
+        ],
     }
 
     with open(JSON_PATH, "w", encoding="utf-8") as f:
@@ -78,6 +85,7 @@ def fetch_vibe_chart():
 
     print(f"✅ JSON 저장 완료: {JSON_PATH}")
     return JSON_PATH
+
 
 # JSON을 CSV로 변환하는 함수
 def convert_json_to_csv():
@@ -93,6 +101,7 @@ def convert_json_to_csv():
 
     print(f"✅ CSV 변환 완료: {CSV_PATH}")
     return CSV_PATH
+
 
 # DAG 설정
 default_args = {
@@ -129,7 +138,11 @@ with DAG(
     upload_csv_to_s3_task = PythonOperator(
         task_id="upload_csv_to_s3",
         python_callable=upload_to_s3,
-        op_kwargs={"file_path": CSV_PATH, "bucket_name": S3_BUCKET, "object_name": S3_CSV_KEY},
+        op_kwargs={
+            "file_path": CSV_PATH,
+            "bucket_name": S3_BUCKET,
+            "object_name": S3_CSV_KEY,
+        },
     )
 
     """save_to_snowflake_task = PythonOperator(
@@ -138,4 +151,5 @@ with DAG(
     )"""
 
     # 작업 순서 정의
-    fetch_vibe_chart_task >> convert_json_to_csv_task >> upload_csv_to_s3_task #save_to_snowflake_task
+    (fetch_vibe_chart_task >> convert_json_to_csv_task >>
+     upload_csv_to_s3_task)  # save_to_snowflake_task

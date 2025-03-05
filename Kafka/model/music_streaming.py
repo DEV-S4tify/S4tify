@@ -1,5 +1,7 @@
 from typing import Optional
+
 from pydantic import BaseModel, Field
+
 
 class EventLog(BaseModel):
     ts: int = Field(..., description="이벤트 타임스탬프")

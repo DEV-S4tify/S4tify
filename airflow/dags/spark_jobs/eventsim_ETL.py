@@ -3,12 +3,14 @@ import sys
 from datetime import datetime
 
 from airflow.models import Variable
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, LongType
+from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
+                               StructType)
+from utils.spark_utils import execute_snowflake_query, spark_session_builder
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # S4tify 루트 디렉토리
+BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..")
+)  # S4tify 루트 디렉토리
 sys.path.append(BASE_DIR)  # sys.path에 S4tify 추가
-
-from utils.spark_utils import spark_session_builder, execute_snowflake_query
 
 
 # SNOW_FLAKE 설정
@@ -23,7 +25,7 @@ SNOWFLAKE_PROPERTIES = {
     "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
     "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "raw_data",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
-    "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com'
+    "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
 S3_BUCKET = sys.argv[1]
 DATA_INTERVAL_START = sys.argv[2]
@@ -36,20 +38,24 @@ day = date_obj.strftime("%d")
 # -------------------------------------------------
 spark = spark_session_builder("app")
 
-schema = StructType([
-    StructField("song", StringType(), True),
-    StructField("artist", StringType(), True),
-    StructField("location", StringType(), True),
-    StructField("sessionId", IntegerType(), True),
-    StructField("userId", IntegerType(), True),
-    StructField("ts", LongType(), True)  # Snowflake의 BIGINT에 맞게 LongType 사용
-])
+schema = StructType(
+    [
+        StructField("song", StringType(), True),
+        StructField("artist", StringType(), True),
+        StructField("location", StringType(), True),
+        StructField("sessionId", IntegerType(), True),
+        StructField("userId", IntegerType(), True),
+        # Snowflake의 BIGINT에 맞게 LongType 사용
+        StructField("ts", LongType(), True),
+    ]
+)
 
 # S3에서 데이터 읽어오기
-df = spark.read \
-    .json(f"{S3_BUCKET}/topics/eventsim_music_streaming/year={year}/month={month}/day={day}/*.json")
+df = spark.read.json(
+    f"{S3_BUCKET}/topics/eventsim_music_streaming/year={year}/month={month}/day={day}/*.json"
+)
 
-df_clean = df.dropna(subset=["song", "artist"]) 
+df_clean = df.dropna(subset=["song", "artist"])
 # df_clean = df.wehre("song IS NOT NULL AND artist IS NOT NULL")
 
 # -------------------CREATE TABLE--------------------
@@ -67,12 +73,9 @@ CREATE TABLE IF NOT EXISTS raw_data.EVENTSIM_LOG (
 execute_snowflake_query(create_table_sql, SNOWFLAKE_PROPERTIES)
 # -----------------------UPSERT----------------------
 # Snowflake TEMP 테이블에 데이터 적재
-df_clean.write \
-    .format("jdbc")\
-    .options(**SNOWFLAKE_PROPERTIES) \
-    .option("dbtable", f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE}") \
-    .mode("overwrite") \
-    .save()
+df_clean.write.format("jdbc").options(**SNOWFLAKE_PROPERTIES).option(
+    "dbtable", f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE}"
+).mode("overwrite").save()
 print("TEMP Table에 데이터 적재 완료")
 
 # Snowflake에서 MERGE 수행
@@ -83,7 +86,7 @@ USING {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE} AS s
         AND target.TS = s."ts"
         AND target.SONG = s."song"
 WHEN MATCHED THEN
-    UPDATE SET 
+    UPDATE SET
         target.LOCATION = s."location",
         target.SESSIONID = s."sessionId"
 WHEN NOT MATCHED THEN

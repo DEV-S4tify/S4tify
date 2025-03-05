@@ -11,11 +11,13 @@
 # kafka-console-consumer --bootstrap-server localhost:9092 --topic eventsim_music_streaming --from-beginning --property print.key=true --property print.value=true
 # '''
 
-import os, sys
+import os
+import sys
+
+from Kafka.utils.docker_utils import register_sink_connector
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, ".."))
 
-from Kafka.utils.docker_utils import register_sink_connector
 
-register_sink_connector(f'{BASE_DIR}/connectors/s3-sink-config.json')
+register_sink_connector(f"{BASE_DIR}/connectors/s3-sink-config.json")

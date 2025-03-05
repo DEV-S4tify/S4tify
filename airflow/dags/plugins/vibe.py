@@ -33,7 +33,14 @@ class ChartEntry:
         isNew: Whether the track is new to the chart.
     """
 
-    def __init__(self, title: str, artist: str, image: str, lastPos: int, rank: int, isNew: bool):
+    def __init__(
+            self,
+            title: str,
+            artist: str,
+            image: str,
+            lastPos: int,
+            rank: int,
+            isNew: bool):
         self.title = title
         self.artist = artist
         self.image = image
@@ -43,15 +50,14 @@ class ChartEntry:
 
     def __repr__(self):
         return "{}.{}(title={!r}, artist={!r})".format(
-            self.__class__.__module__, self.__class__.__name__, self.title, self.artist
-        )
+            self.__class__.__module__, self.__class__.__name__, self.title, self.artist)
 
     def __str__(self):
         """Returns a string of the form 'TITLE by ARTIST'."""
         if self.title:
-            s = u"'%s' by %s" % (self.title, self.artist)
+            s = "'%s' by %s" % (self.title, self.artist)
         else:
-            s = u"%s" % self.artist
+            s = "%s" % self.artist
 
         if sys.version_info.major < 3:
             return s.encode(getattr(sys.stdout, "encoding", "") or "utf8")
@@ -59,7 +65,13 @@ class ChartEntry:
             return s
 
     def json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4, ensure_ascii=False)
+        return json.dumps(
+            self,
+            default=lambda o: o.__dict__,
+            sort_keys=True,
+            indent=4,
+            ensure_ascii=False,
+        )
 
 
 class ChartData:
@@ -73,7 +85,13 @@ class ChartData:
         fetch: A boolean value that indicates whether to retrieve the chart data immediately. If set to `False`, you can fetch the data later using the `fetchEntries()` method.
     """
 
-    def __init__(self, queryStart: int = 1, queryCount: int = 100, imageSize: int = 256, fetch: bool = True):
+    def __init__(
+        self,
+        queryStart: int = 1,
+        queryCount: int = 100,
+        imageSize: int = 256,
+        fetch: bool = True,
+    ):
         self.maxQueryCount = 0
         self.queryStart = queryStart
         self.queryCount = queryCount
@@ -90,20 +108,25 @@ class ChartData:
         return len(self.entries)
 
     def json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4, ensure_ascii=False)
+        return json.dumps(
+            self,
+            default=lambda o: o.__dict__,
+            sort_keys=True,
+            indent=4,
+            ensure_ascii=False,
+        )
 
     def fetchEntries(self):
-        headers = {
-            "User-Agent": _USER_AGENT,
-            "Accept": _ACCEPT
-        }
+        headers = {"User-Agent": _USER_AGENT, "Accept": _ACCEPT}
 
         if 0 < self.maxQueryCount < (self.queryCount + self.queryStart - 1):
-            raise VibeChartQueryException(f"Exceeded maximum query limit. (limit: {self.maxQueryCount})")
+            raise VibeChartQueryException(
+                f"Exceeded maximum query limit. (limit: {self.maxQueryCount})"
+            )
 
         res = requests.get(
             f"{_CHART_API_URL}?start={self.queryStart}&display={self.queryCount}",
-            headers=headers
+            headers=headers,
         )
 
         if res.status_code != 200:
@@ -116,21 +139,21 @@ class ChartData:
 
     def _parseEntries(self, data):
         try:
-            c_data = data['response']['result']['chart']
-            self.name = c_data['title']
-            self.date = self._parseDate(c_data['date'])
-            self.maxQueryCount = int(c_data['chartTotalCount'])
+            c_data = data["response"]["result"]["chart"]
+            self.name = c_data["title"]
+            self.date = self._parseDate(c_data["date"])
+            self.maxQueryCount = int(c_data["chartTotalCount"])
 
-            for item in c_data['items']['tracks']:
+            for item in c_data["items"]["tracks"]:
                 entry = ChartEntry(
-                    title=item['trackTitle'],
-                    artist=item['artists'][0]['artistName'],
-                    image=self._getResizedImageUrl(item['album']['imageUrl']),
-                    rank=int(item['rank']['currentRank']),
+                    title=item["trackTitle"],
+                    artist=item["artists"][0]["artistName"],
+                    image=self._getResizedImageUrl(item["album"]["imageUrl"]),
+                    rank=int(item["rank"]["currentRank"]),
                     lastPos=0,
-                    isNew=item['rank']['isNew']
+                    isNew=item["rank"]["isNew"],
                 )
-                entry.lastPos = entry.rank + int(item['rank']['rankVariation'])
+                entry.lastPos = entry.rank + int(item["rank"]["rankVariation"])
                 self.entries.append(entry)
 
         except Exception as e:
@@ -143,10 +166,16 @@ class ChartData:
     def _getResizedImageUrl(self, url):
         parsed_url = urllib.parse.urlparse(url)
         query_params = urllib.parse.parse_qs(parsed_url.query)
-        query_params['type'] = f'r{self.imageSize}Fll'
+        query_params["type"] = f"r{self.imageSize}Fll"
 
         new_query_string = urllib.parse.urlencode(query_params, doseq=True)
         return urllib.parse.urlunparse(
-            (parsed_url.scheme, parsed_url.netloc, parsed_url.path,
-             parsed_url.params, new_query_string, parsed_url.fragment)
+            (
+                parsed_url.scheme,
+                parsed_url.netloc,
+                parsed_url.path,
+                parsed_url.params,
+                new_query_string,
+                parsed_url.fragment,
+            )
         )

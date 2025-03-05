@@ -30,7 +30,14 @@ class ChartEntry:
         isNew: Whether the track is new to the chart.
     """
 
-    def __init__(self, title: str, artist: str, image: str, lastPos: int, rank: int, isNew: bool):
+    def __init__(
+            self,
+            title: str,
+            artist: str,
+            image: str,
+            lastPos: int,
+            rank: int,
+            isNew: bool):
         self.title = title
         self.artist = artist
         self.image = image
@@ -40,15 +47,14 @@ class ChartEntry:
 
     def __repr__(self):
         return "{}.{}(title={!r}, artist={!r})".format(
-            self.__class__.__module__, self.__class__.__name__, self.title, self.artist
-        )
+            self.__class__.__module__, self.__class__.__name__, self.title, self.artist)
 
     def __str__(self):
         """Returns a string of the form 'TITLE by ARTIST'."""
         if self.title:
-            s = u"'%s' by %s" % (self.title, self.artist)
+            s = "'%s' by %s" % (self.title, self.artist)
         else:
-            s = u"%s" % self.artist
+            s = "%s" % self.artist
 
         if sys.version_info.major < 3:
             return s.encode(getattr(sys.stdout, "encoding", "") or "utf8")
@@ -56,7 +62,13 @@ class ChartEntry:
             return s
 
     def json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4, ensure_ascii=False)
+        return json.dumps(
+            self,
+            default=lambda o: o.__dict__,
+            sort_keys=True,
+            indent=4,
+            ensure_ascii=False,
+        )
 
 
 class ChartData:
@@ -67,6 +79,7 @@ class ChartData:
         imageSize: The size of cover image for the track. (default: 256)
         fetch: A boolean value that indicates whether to retrieve the chart data immediately. If set to `False`, you can fetch the data later using the `fetchEntries()` method.
     """
+
     def __init__(self, imageSize: int = 256, fetch: bool = True):
         self.imageSize = imageSize
         self.entries = []
@@ -81,33 +94,28 @@ class ChartData:
         return len(self.entries)
 
     def json(self):
-        #return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4, ensure_ascii=False)
+        # return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True,
+        # indent=4, ensure_ascii=False)
         """
-            에러의 원인은 datetime.datetime 객체를 JSON 직렬화하려고 할 때 발생합니다.
-            json.dumps()는 기본적으로 datetime 객체를 변환할 수 없으므로, 이를 문자열로 변환해야 합니다.
+        에러의 원인은 datetime.datetime 객체를 JSON 직렬화하려고 할 때 발생합니다.
+        json.dumps()는 기본적으로 datetime 객체를 변환할 수 없으므로, 이를 문자열로 변환해야 합니다.
 
-            해결 방법
-            ChartData 클래스의 json() 메서드에서 datetime을 처리하는 방법을 수정하면 됩니다.
-            아래처럼 default 파라미터에 lambda를 사용하여 datetime을 문자열로 변환하세요.
+        해결 방법
+        ChartData 클래스의 json() 메서드에서 datetime을 처리하는 방법을 수정하면 됩니다.
+        아래처럼 default 파라미터에 lambda를 사용하여 datetime을 문자열로 변환하세요.
         """
         return json.dumps(
             self,
             default=lambda o: o.isoformat() if isinstance(o, datetime) else o.__dict__,
             sort_keys=True,
             indent=4,
-            ensure_ascii=False
+            ensure_ascii=False,
         )
-
 
     def fetchEntries(self):
-        headers = {
-            "User-Agent": _USER_AGENT
-        }
+        headers = {"User-Agent": _USER_AGENT}
 
-        res = requests.get(
-            _CHART_API_URL,
-            headers=headers
-        )
+        res = requests.get(_CHART_API_URL, headers=headers)
 
         if res.status_code != 200:
             message = f"Request is invalid. response status code={res.status_code}"
@@ -118,16 +126,18 @@ class ChartData:
 
     def _parseEntries(self, data):
         try:
-            self.name = data["response"]['PAGE']
-            self.date = self._parseDate(f"{data['response']['RANKDAY']} {data['response']['RANKHOUR']}")
-            for item in data['response']['SONGLIST']:
+            self.name = data["response"]["PAGE"]
+            self.date = self._parseDate(
+                f"{data['response']['RANKDAY']} {data['response']['RANKHOUR']}"
+            )
+            for item in data["response"]["SONGLIST"]:
                 entry = ChartEntry(
-                    title=item['SONGNAME'],
-                    artist=item['ARTISTLIST'][0]['ARTISTNAME'],
-                    image=self._getResizedImage(item['ALBUMIMG']),
+                    title=item["SONGNAME"],
+                    artist=item["ARTISTLIST"][0]["ARTISTNAME"],
+                    image=self._getResizedImage(item["ALBUMIMG"]),
                     rank=int(item["CURRANK"]),
                     lastPos=int(item["PASTRANK"]),
-                    isNew=item["RANKTYPE"] == "NEW"
+                    isNew=item["RANKTYPE"] == "NEW",
                 )
                 self.entries.append(entry)
         except Exception as e:
