@@ -28,23 +28,11 @@ with DAG(
         python_callable=data_crawling
     )
     
-    extract_artistInfo_data = PythonOperator(
-        task_id='request_artist_info',
-        python_callable=get_artist_info,
-        retries=2,
-        retry_delay = timedelta(seconds=30)
-    )
-    
-    extract_artistTop10_data = PythonOperator(
-        task_id = 'request_artist_top10',
-        python_callable=get_arti_top_10,
-        retries=2,
-        retry_delay = timedelta(seconds=30)
-    )
-    
     transformation_data = PythonOperator(
         task_id='join_data',
-        python_callable=read_and_merge
+        python_callable=read_and_merge,
+        retries=2,
+        retry_delay = timedelta(seconds=30)
     )
     
     
@@ -53,4 +41,4 @@ with DAG(
         python_callable=load_s3_bucket
     )
     
-    extract_globalTop50_data >> [extract_artistInfo_data, extract_artistTop10_data] >> transformation_data >> load_data
+    extract_globalTop50_data >>  transformation_data >> load_data
