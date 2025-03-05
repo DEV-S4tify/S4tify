@@ -44,13 +44,22 @@
 #
 # Feel free to modify this file to suit your needs.
 ---
+x-spark-common: &spark-common
+  image: bitnami/spark:latest
+  volumes:
+    - ./jobs:/opt/bitnami/spark/jobs
+  networks:
+    - code-with-yu
+
 x-airflow-common:
   &airflow-common
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.1}
-  # build: .
+  # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.1}
+  build: 
+    context: .
+    dockerfile: Dockerfile
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -59,9 +68,12 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW_VAR_DATA_DIR: /opt/airflow/data
+    # JAR 파일 경로 추가
+    SPARK_JAR_DIR: /opt/spark/jars
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
@@ -69,7 +81,7 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- yfinance pandas numpy oauth2client gspread}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- pandas numpy oauth2client gspread snowflake-connector-python pyspark dotenv-python apache-airflow-providers-apache-spark}
     # The following line can be used to set a custom config file, stored in the local config folder
     # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
     # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
@@ -79,7 +91,11 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
+    - ./spark_jars:/opt/spark/jars  # 모든 Airflow 컨테이너가 동일한 JAR 파일을 공유하도록 설정
   user: "${AIRFLOW_UID:-50000}:0"
+  networks:
+    - code-with-yu
+
   depends_on:
     &airflow-common-depends-on
     redis:
@@ -88,6 +104,25 @@ x-airflow-common:
       condition: service_healthy
 
 services:
+  spark-master:
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "9090:8080"
+      - "7077:7077"
+    environment:
+      JAVA_HOME: /opt/bitnami/java
+
+  spark-worker:
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      JAVA_HOME: /opt/bitnami/java
+      SPARK_MASTER_URL: spark://spark-master:7077
+
   postgres:
     image: postgres:13
     environment:
@@ -102,6 +137,8 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+    networks:
+      - code-with-yu
 
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
@@ -116,6 +153,8 @@ services:
       retries: 50
       start_period: 30s
     restart: always
+    networks:
+      - code-with-yu
 
   airflow-webserver:
     <<: *airflow-common
@@ -250,6 +289,7 @@ services:
     user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
+    
 
   airflow-cli:
     <<: *airflow-common
@@ -288,3 +328,8 @@ services:
 
 volumes:
   postgres-db-volume:
+
+networks:
+  code-with-yu:
+
+    driver: bridge

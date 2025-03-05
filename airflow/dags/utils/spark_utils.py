@@ -1,9 +1,10 @@
 import os
 from pyspark.sql import SparkSession
 import snowflake.connector
+from airflow.models import connection
 
 # Spark JARs 설정
-SPARK_HOME = os.environ.get("SPARK_HOME")
+SPARK_HOME = '/opt/spark/'
 SPARK_JARS = ",".join([
     os.path.join(SPARK_HOME, "jars", "snowflake-jdbc-3.9.2.jar"),
     os.path.join(SPARK_HOME, "jars", "hadoop-aws-3.3.4.jar"),
@@ -23,10 +24,6 @@ def spark_session_builder(app_name: str) -> SparkSession:
     return SparkSession.builder \
         .appName(f"{app_name}") \
         .config("spark.jars", SPARK_JARS)\
-        .config("spark.hadoop.fs.s3a.access.key", os.environ.get("AWS_ACCESS_KEY")) \
-        .config("spark.hadoop.fs.s3a.secret.key", os.environ.get("AWS_SECRET_KEY")) \
-        .config("spark.hadoop.fs.s3a.endpoint", f"s3.{os.environ.get('AWS_REGION')}.amazonaws.com") \
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
         .getOrCreate()
 
 def execute_snowflake_query(query, snowflake_options):
