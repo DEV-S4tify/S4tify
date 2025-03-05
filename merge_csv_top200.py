@@ -17,7 +17,7 @@ def merge_csv(source, destination):
             _, country, _, year, month, day = filename.split('-')
 
             # 기존 데이터 로드
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path,encoding='utf-8')
 
             # uri에서 track_id만 추출하여 컬럼명 변경하여 저장       
             df['uri'] = df['uri'].str.split(':').str[-1]
@@ -32,7 +32,7 @@ def merge_csv(source, destination):
             print(filename)
             
     # 수정된 데이터를 새로운 파일로 저장
-    combined_df.to_csv(destination, index=False)
+    combined_df.to_csv(destination, index=False,encoding='utf-8-sig')
 
 directory = 'C:/Users/Yeojun/s4tify/weekly_Top_Songs/'
 new_filename = "weekly_top200_combined.csv"
