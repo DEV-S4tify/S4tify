@@ -43,7 +43,7 @@ jobs:
           autopep8 --recursive --in-place --aggressive --aggressive . # autopep8를 사용하여 코드 포맷팅
           isort .  # isort를 사용하여 코드 포맷팅
       
-      # 변경사항 Commit
+      # 변경사항 Commit # 아잇 왜 안대
       - name: Commit format changes
         run: |
           git config --local user.email "action@github.com"
