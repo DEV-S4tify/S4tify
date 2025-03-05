@@ -40,7 +40,7 @@ jobs:
       - name: Formatter
         run: |
           black .
-          autopep8 --recursive --in-place --aggressive --agresive . # autopep8를 사용하여 코드 포맷팅
+          autopep8 --recursive --in-place --aggressive --aggressive . # autopep8를 사용하여 코드 포맷팅
           isort .  # isort를 사용하여 코드 포맷팅
       # 변경사항 Commit
       - name: Commit format changes
