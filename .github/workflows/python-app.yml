@@ -30,7 +30,7 @@ jobs:
          
       # Python 버전 확인
       - name: Display Python version
-        run: Python --vresion # Python 버전 표시
+        run: Python --version # Python 버전 표시
 
       # 필요한 Python 패키지 설치
       - name: Install packages
@@ -50,4 +50,4 @@ jobs:
           title: Fixes by format action # 풀 리퀘스트 제목
           body: THis is an auto-generated PR with fixes. # 풀 리퀘스트 본문
           labels: automated pr # 레이블
-          branch: python-code-format-patches # 새로운 브랜치 이
+          branch: python-code-format-patches # 새로운 브랜치 이름
