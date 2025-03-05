@@ -2,34 +2,31 @@ import os
 import sys
 from datetime import datetime
 
-from dotenv import load_dotenv
+from airflow.models import Variable
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, LongType
 
-
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))  # S4tify 루트 디렉토리
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # S4tify 루트 디렉토리
 sys.path.append(BASE_DIR)  # sys.path에 S4tify 추가
 
-from airflow.dags.utils.spark_utils import spark_session_builder, execute_snowflake_query
+from utils.spark_utils import spark_session_builder, execute_snowflake_query
 
-load_dotenv("../../.env") # 환경 변수 로드
 
 # SNOW_FLAKE 설정
 SNOWFLAKE_TABLE = "EVENTSIM_LOG"
 SNOWFLAKE_TEMP_TABLE = "EVENTS_TABLE_TEMP"
 SNOWFLAKE_SCHEMA = "raw_data"
 SNOWFLAKE_PROPERTIES = {
-    "user": os.environ.get("SNOWFLAKE_USER"),
-    "password": os.environ.get("SNOWFLAKE_PASSWORD"),
-    "account": os.environ.get("SNOWFLAKE_ACCOUNT"),
-    "db": os.environ.get("SNOWFLAKE_DB", "DATA_WAREHOUSE"),
-    "warehouse": os.environ.get("SNOWFLAKE_WH", "COMPUTE_WH"),
+    "user": Variable.get("SNOWFLAKE_USER"),
+    "password": Variable.get("SNOWFLAKE_PASSWORD"),
+    "account": Variable.get("SNOWFLAKE_ACCOUNT"),
+    "db": Variable.get("SNOWFLAKE_DB", "DATA_WAREHOUSE"),
+    "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
     "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "raw_data",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
-    "url": f'jdbc:snowflake://{os.environ.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com'
+    "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com'
 }
-S3_BUCKET = "s3a://eventsim-log"
-DATA_INTERVAL_START = '2025-02-28'
-
+S3_BUCKET = sys.argv[1]
+DATA_INTERVAL_START = sys.argv[2]
 # 날짜 변환 (data_interval_start -> year/month/day 형식)
 date_obj = datetime.strptime(DATA_INTERVAL_START, "%Y-%m-%d")
 year = date_obj.strftime("%Y")

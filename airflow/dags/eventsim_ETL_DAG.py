@@ -1,22 +1,36 @@
+import os
+from datetime import timedelta, datetime
+
 from airflow import DAG
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.utils.dates import days_ago
 
 # S3 및 Snowflake 설정
-S3_BUCKET = "s3://eventsim-log/eventsim_log/"
+S3_BUCKET = "s3a://eventsim-log"
+# Spark JARs 설정
+SPARK_HOME = os.environ.get("SPARK_JAR_DIR")
+SPARK_JARS = ",".join([
+    os.path.join(SPARK_HOME, "snowflake-jdbc-3.9.2.jar"),
+    os.path.join(SPARK_HOME, "hadoop-aws-3.3.4.jar"),
+    os.path.join(SPARK_HOME, "aws-java-sdk-bundle-1.12.262.jar")
+])
 
 default_args = {
     'owner': 'airflow',
-    'start_date': days_ago(1),
-    'retries': 1
+    'start_date': datetime(2025, 2, 25),
+    'end_date': datetime(2025, 3, 1),
+    'retries': 1,
+    'template_searchpath': ["/opt/airflow/dags/spark_jobs/"]
 }
 
 dag = DAG(
     dag_id='spark_s3_to_snowflake_upsert',
     default_args=default_args,
     schedule_interval='@daily',
-    catchup=False
+    catchup=True,
+    max_active_runs=1,
+    max_active_tasks=1,
+    tags=['ETL', 'Eventsim']
 )
 
 # Dummy 시작 태스크
@@ -29,10 +43,20 @@ start_task = DummyOperator(
 spark_job = SparkSubmitOperator(
     task_id='spark_process_s3_upsert',
     application="/opt/airflow/dags/spark_jobs/eventsim_ETL.py",
-    conn_id='spark_default',
-    application_args=[S3_BUCKET],
+    conn_id='spark_conn',
+    application_args=[S3_BUCKET,
+                        "{{ (data_interval_start - macros.timedelta(days=1)).strftime('%Y-%m-%d') }}"
+                    ],
     executor_memory="4g",
     driver_memory="2g",
+    jars=SPARK_JARS,
+    conf={
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
+    "spark.hadoop.fs.s3a.access.key": "{{ conn.aws_conn.login }}",
+    "spark.hadoop.fs.s3a.secret.key": "{{ conn.aws_conn.password }}",
+    "spark.hadoop.fs.s3a.endpoint": "s3.ap-northeast-2.amazonaws.com",
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
+    },
     dag=dag
 )
 
