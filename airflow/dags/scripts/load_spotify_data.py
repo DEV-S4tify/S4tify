@@ -37,5 +37,3 @@ def load_s3_bucket():
 
     except Exception as e:
         print(f"error:{e}")
-
-
