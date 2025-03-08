@@ -3,12 +3,12 @@ import json
 from datetime import datetime, timedelta
 
 import pandas as pd
-from airflow.operators.python import PythonOperator
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 from bugs import BugsChartPeriod, BugsChartType, ChartData
 
 from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 """
 your-s3-bucket-name을 실제 S3 버킷명으로 바꾸고,

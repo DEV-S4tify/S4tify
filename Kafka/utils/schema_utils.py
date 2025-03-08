@@ -2,6 +2,7 @@ import io
 import json
 
 import requests
+
 # from avro.io import BinaryEncoder, DatumWriter
 
 '''
@@ -14,6 +15,7 @@ def serialize_avro(data, schema):
     writer.write(data, encoder)
     return bytes_writer.getvalue()
 '''
+
 
 # Avro 스키마 등록 (Schema Registry에 POST 요청)
 def register_schema(SCHEMA_REGISTRY_URL: str, subject: str, schema_dict: dict):

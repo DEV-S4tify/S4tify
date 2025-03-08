@@ -5,8 +5,9 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 import requests
-from airflow.models import Variable
 from scripts.get_access_token import get_token
+
+from airflow.models import Variable
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 END_POINT = "https://api.spotify.com/v1"

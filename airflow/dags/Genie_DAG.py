@@ -3,12 +3,12 @@ import json
 from datetime import datetime, timedelta
 
 import pandas as pd
-from airflow.operators.python import PythonOperator
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 from genie import ChartData, GenieChartPeriod  # genie.py 모듈 import
 
 from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 # 환경 변수 설정
 TODAY = datetime.now().strftime("%Y%m%d")

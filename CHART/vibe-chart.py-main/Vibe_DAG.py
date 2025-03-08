@@ -2,10 +2,10 @@ import csv
 import json
 from datetime import datetime, timedelta
 
-from airflow.operators.python import PythonOperator
 from vibe import ChartData  # vibe.py 모듈 import
 
 from airflow import DAG
+from airflow.operators.python import PythonOperator
 
 
 # Vibe 차트 데이터를 가져와 JSON으로 저장하는 함수

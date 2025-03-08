@@ -10,13 +10,13 @@ from kafka.admin import NewTopic
 from kafka.errors import TopicAlreadyExistsError
 from kafka.producer import KafkaProducer
 
-# Kafka 패키지가 있는 경로 추가
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(BASE_DIR, ".."))
-
 from Kafka.model.music_streaming import EventLog
 from Kafka.utils.docker_utils import get_container_id, is_container_running
 from Kafka.utils.schema_utils import register_schema
+
+# Kafka 패키지가 있는 경로 추가
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(BASE_DIR, ".."))
 
 
 SCHEMA_REGISTRY_URL = "http://localhost:8081"

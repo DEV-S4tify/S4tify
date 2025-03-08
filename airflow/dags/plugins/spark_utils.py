@@ -1,8 +1,9 @@
 import os
 
 import snowflake.connector
-from airflow.models import connection
 from pyspark.sql import SparkSession
+
+from airflow.models import connection
 
 # Spark JARs 설정
 SPARK_HOME = "/opt/spark/"

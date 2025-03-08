@@ -1,11 +1,13 @@
-import os
 import json
+import os
+
 from Kafka.variables.aws_variables import aws_variables
+
 
 def create_s3_sink_json():
     # 현재 파일(= connect_utils.py) 위치
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     # connectors 폴더 경로
     connectors_dir = os.path.join(base_dir, "..", "connectors")
     os.makedirs(connectors_dir, exist_ok=True)  # 폴더가 없으면 생성
@@ -38,10 +40,9 @@ def create_s3_sink_json():
             "timestamp.field": "ts",
             "partition.duration.ms": "86400000",
             "aws.access.key.id": aws_variables.get("aws_access_key_id"),
-            "aws.secret.access.key": aws_variables.get("aws_secret_access_key")
-        }
+            "aws.secret.access.key": aws_variables.get("aws_secret_access_key"),
+        },
     }
-    
+
     with open(file_path, "w") as f:
         json.dump(config, f, indent=4)
-    
