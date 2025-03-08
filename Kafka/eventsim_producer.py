@@ -5,19 +5,18 @@ import sys
 import time
 from typing import Final
 
-import avro.schema
 from kafka import KafkaAdminClient
 from kafka.admin import NewTopic
 from kafka.errors import TopicAlreadyExistsError
 from kafka.producer import KafkaProducer
 
-from Kafka.model.music_streaming import EventLog
-from Kafka.utils.docker_utils import get_container_id, is_container_running
-from Kafka.utils.schema_utils import register_schema, serialize_avro
-
 # Kafka 패키지가 있는 경로 추가
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, ".."))
+
+from Kafka.model.music_streaming import EventLog
+from Kafka.utils.docker_utils import get_container_id, is_container_running
+from Kafka.utils.schema_utils import register_schema
 
 
 SCHEMA_REGISTRY_URL = "http://localhost:8081"
@@ -112,8 +111,6 @@ def main():
 
     create_topic(bootstrap_servers, topic_name, 4)
     register_schema(SCHEMA_REGISTRY_URL, f"{topic_name}-value", schema_dict)
-
-    schema = avro.schema.parse(open(SCHEMA_PATH).read())
 
     producer = KafkaProducer(
         bootstrap_servers=bootstrap_servers,

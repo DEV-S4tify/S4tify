@@ -3,9 +3,8 @@ import sys
 from datetime import datetime
 
 from airflow.models import Variable
-from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
-                               StructType)
-from utils.spark_utils import execute_snowflake_query, spark_session_builder
+from pyspark.sql.types import (IntegerType, LongType, StringType, StructField, StructType)
+from ..dags.plugins.spark_utils import execute_snowflake_query, spark_session_builder
 
 BASE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..")

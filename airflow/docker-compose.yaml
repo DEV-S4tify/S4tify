@@ -91,7 +91,6 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
-    - ./spark_jars:/opt/spark/jars  # 모든 Airflow 컨테이너가 동일한 JAR 파일을 공유하도록 설정
   user: "${AIRFLOW_UID:-50000}:0"
   networks:
     - code-with-yu
