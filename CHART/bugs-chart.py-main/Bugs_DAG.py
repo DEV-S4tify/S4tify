@@ -2,10 +2,10 @@ import csv
 import json
 from datetime import datetime, timedelta
 
-from airflow.operators.python import PythonOperator
 from bugs import BugsChartPeriod, BugsChartType, ChartData
 
 from airflow import DAG
+from airflow.operators.python import PythonOperator
 
 # 파일 경로
 JSON_PATH = "/opt/airflow/dags/files/bugs_chart.json"

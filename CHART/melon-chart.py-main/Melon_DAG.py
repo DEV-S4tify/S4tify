@@ -3,9 +3,9 @@ import json
 from datetime import datetime, timedelta
 
 import requests
-from airflow.operators.python import PythonOperator
 
 from airflow import DAG
+from airflow.operators.python import PythonOperator
 
 # 멜론 차트 API 정보
 _APP_VERSION = "6.5.8.1"

@@ -2,9 +2,6 @@ import os
 import time
 from datetime import datetime, timedelta
 
-from airflow.decorators import task
-from airflow.models import Variable
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -12,6 +9,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from airflow import DAG
+from airflow.decorators import task
+from airflow.models import Variable
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 
 @task

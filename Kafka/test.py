@@ -1,23 +1,17 @@
-# import base64
-
-
-# encoded_value = 'T2JqAQQUYXZyby5jb2RlYwhudWxsFmF2cm8uc2NoZW1h8Ap7InR5cGUiOiAicmVjb3JkIiwgIm5hbWUiOiAiTXVzaWNTdHJlYW1pbmdFdmVudCIsICJuYW1lc3BhY2UiOiAiY29tLmV4YW1wbGUiLCAiZmllbGRzIjogW3sibmFtZSI6ICJzb25nIiwgInR5cGUiOiBbIm51bGwiLCAic3RyaW5nIl0sICJkZWZhdWx0IjogbnVsbH0sIHsibmFtZSI6ICJtZXRob2QiLCAidHlwZSI6ICJzdHJpbmcifSwgeyJuYW1lIjogImF1dGgiLCAidHlwZSI6ICJzdHJpbmcifSwgeyJuYW1lIjogImxldmVsIiwgInR5cGUiOiB7InR5cGUiOiAiZW51bSIsICJuYW1lIjogIlVzZXJMZXZlbCIsICJzeW1ib2xzIjogWyJmcmVlIiwgInBhaWQiXX19LCB7Im5hbWUiOiAiYXJ0aXN0IiwgInR5cGUiOiBbIm51bGwiLCAic3RyaW5nIl0sICJkZWZhdWx0IjogbnVsbH0sIHsibmFtZSI6ICJsZW5ndGgiLCAidHlwZSI6IFsibnVsbCIsICJmbG9hdCJdLCAiZGVmYXVsdCI6IG51bGx9LCB7Im5hbWUiOiAibG9jYXRpb24iLCAidHlwZSI6IFsibnVsbCIsICJzdHJpbmciXSwgImRlZmF1bHQiOiBudWxsfSwgeyJuYW1lIjogInNlc3Npb25JZCIsICJ0eXBlIjogImludCJ9LCB7Im5hbWUiOiAicGFnZSIsICJ0eXBlIjogInN0cmluZyJ9LCB7Im5hbWUiOiAidXNlcklkIiwgInR5cGUiOiAic3RyaW5nIn0sIHsibmFtZSI6ICJ0cyIsICJ0eXBlIjogImxvbmcifSwgeyJuYW1lIjogInN0YXR1cyIsICJ0eXBlIjogImludCJ9XX0A+mJ1+f9mVszSkk7Jz218fQLqAQIgQnJpbmcgTWUgVG8gTGlmZQZQVVQSTG9nZ2VkIEluAAIWRXZhbmVzY2VuY2UC7xxtQwJOTWlubmVhcG9saXMtU3QuIFBhdWwtQmxvb21pbmd0b24sIE1OLVdJ/MEGEE5leHRTb25nCDg0NzS0uNijlmWQA/pidfn/ZlbM0pJOyc9tfH0='
-
-# decoded_bytes = base64.b64decode(encoded_value)
-
-# print(f"Decoded first byte (Magic Byte): {decoded_bytes[0]}")
-
-# '''
-# kafka-console-consumer --bootstrap-server localhost:9092 --topic eventsim_music_streaming --from-beginning --property print.key=true --property print.value=true
-# '''
-
 import os
+import subprocess
 import sys
 
+from Kafka.utils.connect_utils import create_s3_sink_json
 from Kafka.utils.docker_utils import register_sink_connector
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, ".."))
 
 
-register_sink_connector(f"{BASE_DIR}/connectors/s3-sink-config.json")
+create_s3_sink_json()
+register_sink_connector(f"{BASE_DIR}/connectors/s3_sink_config.json")
+
+
+producer_script = os.path.join(BASE_DIR, "Kafka/" "eventsim_producer.py")
+subprocess.run(["python", producer_script], check=True)

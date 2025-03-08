@@ -1,11 +1,10 @@
 import os
 from datetime import datetime, timedelta
 
+from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
-
-from airflow import DAG
 
 # S3 및 Snowflake 설정
 S3_BUCKET = "s3a://eventsim-log"

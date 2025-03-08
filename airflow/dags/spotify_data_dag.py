@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
-from airflow.operators.python import PythonOperator
 from scripts.crawling_spotify_data import *
 from scripts.load_spotify_data import *
 from scripts.request_spotify_api import *
 
 from airflow import DAG
+from airflow.operators.python import PythonOperator
 
 default_args = {
     "depends_on_past": False,

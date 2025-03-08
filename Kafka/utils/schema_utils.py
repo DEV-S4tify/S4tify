@@ -2,9 +2,10 @@ import io
 import json
 
 import requests
-from avro.io import BinaryEncoder, DatumWriter
 
+# from avro.io import BinaryEncoder, DatumWriter
 
+'''
 # Avro 직렬화 함수
 def serialize_avro(data, schema):
     """Avro 데이터를 직렬화하여 바이너리 포맷으로 변환"""
@@ -13,6 +14,7 @@ def serialize_avro(data, schema):
     encoder = BinaryEncoder(bytes_writer)
     writer.write(data, encoder)
     return bytes_writer.getvalue()
+'''
 
 
 # Avro 스키마 등록 (Schema Registry에 POST 요청)

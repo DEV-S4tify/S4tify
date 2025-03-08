@@ -2,8 +2,9 @@ from datetime import datetime
 
 import boto3
 import pandas as pd
-from airflow.models import Variable
 from scripts.request_spotify_api import *
+
+from airflow.models import Variable
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 

@@ -3,6 +3,7 @@ import json
 import os
 
 import requests
+
 from airflow.models import Variable
 
 SPOTIFY_CLIENT_ID = Variable.get("SPOTIFY_CLIENT_ID")
