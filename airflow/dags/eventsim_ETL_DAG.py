@@ -7,7 +7,7 @@ from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
 
 # S3 및 Snowflake 설정
-S3_BUCKET = "s3a://eventsim-log"
+S3_BUCKET = "s3a://de5-s4tify"
 # Spark JARs 설정
 SPARK_HOME = os.environ.get("SPARK_JAR_DIR")
 SPARK_JARS = ",".join(
