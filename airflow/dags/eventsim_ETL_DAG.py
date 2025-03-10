@@ -20,8 +20,8 @@ SPARK_JARS = ",".join(
 
 default_args = {
     "owner": "airflow",
-    "start_date": datetime(2025, 2, 25),
-    "end_date": datetime(2025, 3, 1),
+    "start_date": datetime(2025, 2, 29),
+    "end_date": datetime(2025, 3, 7),
     "retries": 1,
     "template_searchpath": ["/opt/airflow/dags/spark_jobs/"],
 }
