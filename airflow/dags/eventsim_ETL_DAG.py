@@ -7,7 +7,7 @@ from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
 
 # S3 및 Snowflake 설정
-S3_BUCKET = "s3a://eventsim-log"
+S3_BUCKET = "s3a://de5-s4tify"
 # Spark JARs 설정
 SPARK_HOME = os.environ.get("SPARK_JAR_DIR")
 SPARK_JARS = ",".join(
@@ -20,8 +20,8 @@ SPARK_JARS = ",".join(
 
 default_args = {
     "owner": "airflow",
-    "start_date": datetime(2025, 2, 25),
-    "end_date": datetime(2025, 3, 1),
+    "start_date": datetime(2025, 3, 1),
+    "end_date": datetime(2025, 3, 7),
     "retries": 1,
     "template_searchpath": ["/opt/airflow/dags/spark_jobs/"],
 }
@@ -42,7 +42,7 @@ start_task = DummyOperator(task_id="start", dag=dag)
 # SparkSubmitOperator: Spark에서 S3 데이터를 처리하고 Snowflake에 MERGE
 spark_job = SparkSubmitOperator(
     task_id="spark_process_s3_upsert",
-    application="/opt/airflow/dags/spark_jobs/eventsim_ETL.py",
+    application="/opt/airflow/dags/scripts/eventsim_ETL.py",
     conn_id="spark_conn",
     application_args=[
         S3_BUCKET,

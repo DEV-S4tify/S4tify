@@ -2,31 +2,24 @@ import os
 import sys
 from datetime import datetime
 
+from plugins.spark_utils import execute_snowflake_query, spark_session_builder
 from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
                                StructType)
 
 from airflow.models import Variable
 
-from ..dags.plugins.spark_utils import (execute_snowflake_query,
-                                        spark_session_builder)
-
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..")
-)  # S4tify 루트 디렉토리
-sys.path.append(BASE_DIR)  # sys.path에 S4tify 추가
-
-
 # SNOW_FLAKE 설정
 SNOWFLAKE_TABLE = "EVENTSIM_LOG"
 SNOWFLAKE_TEMP_TABLE = "EVENTS_TABLE_TEMP"
-SNOWFLAKE_SCHEMA = "raw_data"
+SNOWFLAKE_SCHEMA = "RAW_DATA"
 SNOWFLAKE_PROPERTIES = {
     "user": Variable.get("SNOWFLAKE_USER"),
     "password": Variable.get("SNOWFLAKE_PASSWORD"),
     "account": Variable.get("SNOWFLAKE_ACCOUNT"),
-    "db": Variable.get("SNOWFLAKE_DB", "DATA_WAREHOUSE"),
+    "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
     "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
-    "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "raw_data",
+    "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "RAW_DATA",
+    "role": Variable.get("SNOWFLAKE_ROLE", "ANALYTICS_USERS"),
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
     "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
@@ -64,7 +57,7 @@ df_clean = df.dropna(subset=["song", "artist"])
 # -------------------CREATE TABLE--------------------
 # 테이블 생성
 create_table_sql = f"""
-CREATE TABLE IF NOT EXISTS raw_data.EVENTSIM_LOG (
+CREATE TABLE IF NOT EXISTS {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TABLE} (
     song STRING,
     artist STRING,
     location STRING,
@@ -74,6 +67,7 @@ CREATE TABLE IF NOT EXISTS raw_data.EVENTSIM_LOG (
 );
 """
 execute_snowflake_query(create_table_sql, SNOWFLAKE_PROPERTIES)
+print("Create Table")
 # -----------------------UPSERT----------------------
 # Snowflake TEMP 테이블에 데이터 적재
 df_clean.write.format("jdbc").options(**SNOWFLAKE_PROPERTIES).option(
