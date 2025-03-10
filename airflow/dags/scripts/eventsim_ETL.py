@@ -2,14 +2,11 @@ import os
 import sys
 from datetime import datetime
 
+from plugins.spark_utils import execute_snowflake_query, spark_session_builder
 from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
                                StructType)
 
 from airflow.models import Variable
-
-from plugins.spark_utils import (execute_snowflake_query,
-                                        spark_session_builder)
-
 
 # SNOW_FLAKE 설정
 SNOWFLAKE_TABLE = "EVENTSIM_LOG"

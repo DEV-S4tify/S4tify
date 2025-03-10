@@ -56,7 +56,7 @@ spark_job = SparkSubmitOperator(
         "spark.hadoop.fs.s3a.access.key": "{{ conn.aws_conn.login }}",
         "spark.hadoop.fs.s3a.secret.key": "{{ conn.aws_conn.password }}",
         "spark.hadoop.fs.s3a.endpoint": "s3.ap-northeast-2.amazonaws.com",
-        "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
+        "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
     },
     dag=dag,
 )
