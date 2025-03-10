@@ -7,13 +7,8 @@ from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
 
 from airflow.models import Variable
 
-from ..dags.plugins.spark_utils import (execute_snowflake_query,
+from plugins.spark_utils import (execute_snowflake_query,
                                         spark_session_builder)
-
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..")
-)  # S4tify 루트 디렉토리
-sys.path.append(BASE_DIR)  # sys.path에 S4tify 추가
 
 
 # SNOW_FLAKE 설정
@@ -24,7 +19,7 @@ SNOWFLAKE_PROPERTIES = {
     "user": Variable.get("SNOWFLAKE_USER"),
     "password": Variable.get("SNOWFLAKE_PASSWORD"),
     "account": Variable.get("SNOWFLAKE_ACCOUNT"),
-    "db": Variable.get("SNOWFLAKE_DB", "DATA_WAREHOUSE"),
+    "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
     "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
     "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "raw_data",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
