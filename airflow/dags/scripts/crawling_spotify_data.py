@@ -5,13 +5,10 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver import ActionChains
+
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 
@@ -48,11 +45,9 @@ def data_crawling():
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
 
-        service = Service("/opt/airflow/chromedriver-linux64/chromedriver")
-
         url = "https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF"
 
-        with webdriver.Chrome(service=service, options=chrome_options) as driver:
+        with webdriver.Chrome(service=Service(), options=chrome_options) as driver:
 
             print("크롤링 시작")
 
