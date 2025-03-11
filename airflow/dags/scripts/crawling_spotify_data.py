@@ -70,8 +70,6 @@ def data_crawling():
                     By.XPATH, '//*[@id="main"]//div[@role="row"]'
                 )
 
-                print(len(song_lists))
-
                 for i in range(1, len(song_lists)):
 
                     artist = []
@@ -92,7 +90,6 @@ def data_crawling():
                         By.XPATH,
                         f'//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div/div[2]/div[2]/div[{i}]/div/div[2]/div/div',
                     )
-                    print(song_title.text)
 
                     global_top50_df.loc[i, "title"] = song_title.text
 
@@ -106,9 +103,7 @@ def data_crawling():
                     arti_list = arti_info.find_elements(By.TAG_NAME, "a")
 
                     for arti in arti_list:
-                        print(arti.text)
                         artist.append(arti.text)
-                        print(arti.get_attribute("href")[-22:])
                         artist_id.append(arti.get_attribute("href")[-22:])
 
                     global_top50_df.loc[i, "artist"] = artist
