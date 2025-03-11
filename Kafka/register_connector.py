@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 
 from Kafka.utils.connect_utils import create_s3_sink_json
@@ -11,7 +10,3 @@ sys.path.append(os.path.join(BASE_DIR, ".."))
 
 create_s3_sink_json()
 register_sink_connector(f"{BASE_DIR}/connectors/s3_sink_config.json")
-
-
-producer_script = os.path.join(BASE_DIR, "Kafka/" "eventsim_producer.py")
-subprocess.run(["python", producer_script], check=True)
