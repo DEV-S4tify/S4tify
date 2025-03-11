@@ -10,26 +10,27 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from airflow import DAG
 from airflow.decorators import task
-from airflow.models import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 
 @task
 def extract(countries, **kwargs):
 
-    user_id = Variable.get("SPOTIFY_ID")
-    user_pass = Variable.get("SPOTIFY_PASS")
+    user_id = os.getenv("AIRFLOW_VAR_SPOTIFY_ID")
+    user_pass = os.getenv("AIRFLOW_VAR_SPOTIFY_PASS")
 
     execution_date = kwargs["ds"]
     exec_date = datetime.strptime(execution_date, "%Y-%m-%d")
     current_weekday = exec_date.weekday()
-    days_since_last_thursday = (current_weekday - 3) % 7
-    if current_weekday >= 5:
-        last_thursday = exec_date - timedelta(days=days_since_last_thursday)
-    else:
-        last_thursday = exec_date - \
-            timedelta(days=days_since_last_thursday + 7)
-    date = last_thursday.strftime("%Y-%m-%d")
+
+    if current_weekday >= 5:  # 주말(토, 일)인 경우 → 이번 주 목요일 가져오기
+        days_until_thursday = (3 - current_weekday) % 7
+        target_date = exec_date + timedelta(days=days_until_thursday)
+    else:  # 평일(월~금)인 경우 → 지난주 목요일 가져오기
+        days_since_thursday = (current_weekday - 3) % 7
+        target_date = exec_date - timedelta(days=days_since_thursday)
+
+    date = target_date.strftime("%Y-%m-%d")
 
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
