@@ -2,11 +2,11 @@ import ast
 import time
 from datetime import datetime
 from typing import Any, Dict, Optional
-from scripts.load_spotify_data import *
 
 import pandas as pd
 import requests
 from scripts.get_access_token import get_token
+from scripts.load_spotify_data import *
 
 from airflow.models import Variable
 
@@ -17,87 +17,96 @@ SPOTIFY_ACCESS_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN")
 LAST_FM_API_KEY = Variable.get("LAST_FM_API_KEY")
 
 
-
-
-#아티스트 top 10 트랙 가져오기 
+# 아티스트 top 10 트랙 가져오기
 def get_arti_top10(logical_date, **kwargs):
-    
-    task_instance = kwargs['ti']
+
+    task_instance = kwargs["ti"]
     arti_top10_list = []
     object_name = f"spotify_artist_top10_{logical_date}.csv"
-    
-    #csv 파일 읽어오기 
+
+    # csv 파일 읽어오기
     song_info = read_crawling_csv(logical_date)
 
     for _, row in song_info.iterrows():
-        
-        artist_id = ast.literal_eval(row['artist_id'])
-    
-        #피처링 등의 이유로 아티스트가 2명 이상인 경우가 존재 
+
+        artist_id = ast.literal_eval(row["artist_id"])
+
+        # 피처링 등의 이유로 아티스트가 2명 이상인 경우가 존재
         for i in range(len(artist_id)):
             id = artist_id[i]
-            end_point = END_POINT+f'/artists/{id}/top-tracks/'
+            end_point = END_POINT + f"/artists/{id}/top-tracks/"
 
             top_10_info = extract(end_point)
-        
+
             try:
-                for track in top_10_info['tracks']:
-                    arti_top10_list.append({
-                    "album": track['album']['name'],
-                    "artist_id": id,
-                    "song_id" : track['id'],
-                    "title" : track['name']
-                })
+                for track in top_10_info["tracks"]:
+                    arti_top10_list.append(
+                        {
+                            "album": track["album"]["name"],
+                            "artist_id": id,
+                            "song_id": track["id"],
+                            "title": track["name"],
+                        }
+                    )
             except Exception as e:
                 print(f"error:{top_10_info}")
-    
-    #task_instance.xcom_push(key='artist_top10', value=arti_top10_list)
-    artist_top10_df = pd.DataFrame(arti_top10_list)
-    artist_top10_df.to_csv(f"data/{object_name}",encoding="utf-8-sig", index=False)
-    load_s3_bucket(object_name)
-    
 
-#아티스트 정보 가져오기     
+    # task_instance.xcom_push(key='artist_top10', value=arti_top10_list)
+    artist_top10_df = pd.DataFrame(arti_top10_list)
+    artist_top10_df.to_csv(
+        f"data/{object_name}",
+        encoding="utf-8-sig",
+        index=False)
+    load_s3_bucket(object_name)
+
+
+# 아티스트 정보 가져오기
 def get_artist_info(logical_date, **kwargs):
-    
-    task_instance = kwargs['ti']
+
+    task_instance = kwargs["ti"]
     artist_info_list = []
-    object_name =f"spotify_artist_info_{logical_date}.csv"
-    
-    #csv 파일 읽어오기 
+    object_name = f"spotify_artist_info_{logical_date}.csv"
+
+    # csv 파일 읽어오기
     song_info = read_crawling_csv(logical_date)
-    
+
     for _, row in song_info.iterrows():
-        artist_id = ast.literal_eval(row['artist_id'])
-        
+        artist_id = ast.literal_eval(row["artist_id"])
+
         for i in range(len(artist_id)):
             id = artist_id[i]
-            
+
             try:
-                end_point = END_POINT+f'/artists/{id}'
+                end_point = END_POINT + f"/artists/{id}"
                 artist_info = extract(end_point)
-                #print(artist_info['name'])
-                artist_info_list.append({
-                    "artist" : artist_info['name'],
-                    "artist_id": id,
-                    "artist_genre": artist_info['genres']
-                })
+                # print(artist_info['name'])
+                artist_info_list.append(
+                    {
+                        "artist": artist_info["name"],
+                        "artist_id": id,
+                        "artist_genre": artist_info["genres"],
+                    }
+                )
             except Exception as e:
                 time.sleep(20)
                 print(f"error:{artist_info}")
-    
-    #task_instance.xcom_push(key="artist_info", value=artist_info_list)
+
+    # task_instance.xcom_push(key="artist_info", value=artist_info_list)
     artist_info_df = pd.DataFrame(artist_info_list)
-    artist_info_df.to_csv(f"data/{object_name}", encoding="utf-8-sig", index=False)
+    artist_info_df.to_csv(
+        f"data/{object_name}",
+        encoding="utf-8-sig",
+        index=False)
     load_s3_bucket(object_name)
 
-    
 
 # 크롤링 데이터 읽어오는 함수
 def read_crawling_csv(execution_date) -> pd.DataFrame:
-    
-    daily_chart_crawling = pd.read_csv(f"data/spotify_crawling_data_{execution_date}.csv")
-    
+
+    daily_chart_crawling = pd.read_csv(
+        f"data/spotify_crawling_data_{execution_date}.csv"
+    )
+
     return daily_chart_crawling
 
 
