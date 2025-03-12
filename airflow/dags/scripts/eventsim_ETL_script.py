@@ -1,27 +1,30 @@
 import os
 import sys
 from datetime import datetime
+from dotenv import load_dotenv
 
-from plugins.spark_utils import execute_snowflake_query, spark_session_builder
+from spark_utils import execute_snowflake_query, spark_session_builder
 from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
                                StructType)
 
 from airflow.models import Variable
+
+load_dotenv()
 
 # SNOW_FLAKE 설정
 SNOWFLAKE_TABLE = "EVENTSIM_LOG"
 SNOWFLAKE_TEMP_TABLE = "EVENTS_TABLE_TEMP"
 SNOWFLAKE_SCHEMA = "RAW_DATA"
 SNOWFLAKE_PROPERTIES = {
-    "user": Variable.get("SNOWFLAKE_USER"),
-    "password": Variable.get("SNOWFLAKE_PASSWORD"),
-    "account": Variable.get("SNOWFLAKE_ACCOUNT"),
-    "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
-    "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
+    "user": os.environ.get("SNOWFLAKE_USER"),
+    "password": os.environ.get("SNOWFLAKE_PASSWORD"),
+    "account": os.environ.get("SNOWFLAKE_ACCOUNT"),
+    "db": os.environ.get("SNOWFLAKE_DB", "S4TIFY"),
+    "warehouse": os.environ.get("SNOWFLAKE_WH", "COMPUTE_WH"),
     "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "RAW_DATA",
-    "role": Variable.get("SNOWFLAKE_ROLE", "ANALYTICS_USERS"),
+    "role": os.environ.get("SNOWFLAKE_ROLE", "ANALYTICS_USERS"),
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
-    "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
+    "url": f'jdbc:snowflake://{os.environ.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
 S3_BUCKET = sys.argv[1]
 DATA_INTERVAL_START = sys.argv[2]
@@ -68,12 +71,21 @@ CREATE TABLE IF NOT EXISTS {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TABLE} (
 """
 execute_snowflake_query(create_table_sql, SNOWFLAKE_PROPERTIES)
 print("Create Table")
+
 # -----------------------UPSERT----------------------
 # Snowflake TEMP 테이블에 데이터 적재
-df_clean.write.format("jdbc").options(**SNOWFLAKE_PROPERTIES).option(
-    "dbtable", f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE}"
-).mode("overwrite").save()
-print("TEMP Table에 데이터 적재 완료")
+create_temp_table_sql = f"""
+CREATE TABLE IF NOT EXISTS {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE} (
+    song STRING,
+    artist STRING,
+    location STRING,
+    sessionId INT,
+    userId INT,
+    ts BIGINT
+);
+"""
+execute_snowflake_query(create_temp_table_sql, SNOWFLAKE_PROPERTIES)
+print("TEMP 테이블 확인 완료")
 
 # Snowflake에서 MERGE 수행
 merge_sql = f"""
@@ -92,5 +104,13 @@ WHEN NOT MATCHED THEN
 """
 execute_snowflake_query(merge_sql, SNOWFLAKE_PROPERTIES)
 print("Merge 완료")
+
+# -------------------DROP TABLE--------------------
+# 임시 테이블 삭제제
+drop_table_sql = f"""
+DROP TABLE {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE};
+"""
+execute_snowflake_query(drop_table_sql, SNOWFLAKE_PROPERTIES)
+print("Drop Table")
 
 spark.stop()

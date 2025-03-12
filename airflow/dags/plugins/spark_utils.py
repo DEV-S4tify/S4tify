@@ -28,6 +28,7 @@ def spark_session_builder(app_name: str) -> SparkSession:
     """
     return (
         SparkSession.builder.appName(f"{app_name}")
+        .master("spark://spark-master:7077")
         .config("spark.jars", SPARK_JARS)
         .getOrCreate()
     )
