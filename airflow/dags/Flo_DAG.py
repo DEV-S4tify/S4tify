@@ -1,98 +1,104 @@
 import csv
 import json
+import requests
 from datetime import datetime, timedelta
 
-from flo import ChartData  # flo.py 모듈 import
-
+from plugins.flo import ChartData  # flo.py 모듈 import
+from scripts.get_access_token import get_token
 from airflow import DAG
-from airflow.hooks.base_hook import BaseHook
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.models import Variable
 
-# 파일 경로 및 S3 버킷 정보
+# 날짜 설정
 TODAY = datetime.now().strftime("%Y%m%d")
-JSON_PATH = f"/opt/airflow/data/flo_chart_{TODAY}.json"
-CSV_PATH = f"/opt/airflow/data/flo_chart_{TODAY}.csv"
+
+# S3 설정
 S3_BUCKET = "de5-s4tify"
-S3_JSON_KEY = f"raw_data/flo_chart/flo_chart_{TODAY}.json"
-S3_CSV_KEY = f"raw_data/flo_chart/flo_chart_{TODAY}.csv"
+S3_CSV_KEY = f"raw_data/flo_chart_{TODAY}.csv"
+LOCAL_FILE_PATH = f"/opt/airflow/data/flo_chart_with_genre_{TODAY}.csv"
 
+# Spotify API 설정
+SPOTIFY_API_URL = "https://api.spotify.com/v1"
+SPOTIFY_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN", default_var=None)
 
-# AWS S3 업로드 함수
-def upload_to_s3():
-    s3_hook = S3Hook(aws_conn_id="S4tify_S3")  # Airflow Connection ID 사용
-    file_name = CSV_PATH.split("/")[-1]
-    s3_hook.load_file(
-        filename=CSV_PATH, bucket_name=S3_BUCKET, key=file_name, replace=True
-    )
-    print(f"✅ S3 업로드 완료: s3://{S3_BUCKET}/{file_name}")
+# Spotify API에서 아티스트 ID 검색
+def search_artist_id(artist_name):
+    SPOTIFY_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN", default_var=None)
+    url = f"{SPOTIFY_API_URL}/search"
+    headers = {"Authorization": f"Bearer {SPOTIFY_TOKEN}"}
+    params = {"q": artist_name, "type": "artist", "limit": 1}
+    response = requests.get(url, headers=headers, params=params)
+    
+    if response.status_code == 200:
+        artists = response.json().get("artists", {}).get("items", [])
+        artist_id = artists[0]["id"] if artists else None
+        return artist_id
+    return None
 
+# Spotify API에서 아티스트 장르 가져오기
+def get_artist_genre(artist_id):
+    if not artist_id:
+        return "Unknown"
+    
+    SPOTIFY_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN", default_var=None)
+    url = f"{SPOTIFY_API_URL}/artists/{artist_id}"
+    headers = {"Authorization": f"Bearer {SPOTIFY_TOKEN}"}
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        genres = response.json().get("genres", [])
+        return ", ".join(genres) if genres else "Unknown"
+    return "Unknown"
 
-"""# Snowflake 저장 함수
-def save_to_snowflake():
-    # Airflow 연결에서 Snowflake 연결 정보 가져오기
-    connection = BaseHook.get_connection('s4tify_SnowFlake')  # Airflow에 설정된 Snowflake 연결 정보 사용
-
-    # Snowflake 연결 생성
-    conn = snowflake.connector.connect(
-        user=connection.login,  # Airflow 연결의 username 사용
-        password=connection.password,  # Airflow 연결의 password 사용
-        account=connection.host,  # Airflow 연결의 account 정보 사용
-        warehouse=connection.extra_dejson.get('warehouse'),  # Extra 정보에서 warehouse 읽기
-        database=connection.extra_dejson.get('database'),  # Extra 정보에서 database 읽기
-        schema=connection.extra_dejson.get('schema'),  # Extra 정보에서 schema 읽기
-    )
-
-    cursor = conn.cursor()
-    cursor.execute(f"DELETE FROM flo_chart WHERE date = '{TODAY}'")
-    with open(CSV_PATH, "r", encoding="utf-8") as f:
-        next(f)  # 헤더 스킵
-        for line in f:
-            values = line.strip().split(",")
-            cursor.execute(
-                "INSERT INTO flo_chart (rank, title, artist, lastPos, isNew, image, date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                (*values, TODAY)
-            )
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print("✅ Snowflake 저장 완료")
-"""
-
-
-# 1. FLO 차트 데이터 가져오기 및 JSON 저장
+# 1. FLO 차트 데이터 가져오기 및 JSON 변환
 def fetch_flo_chart():
     chart = ChartData(fetch=True)
     chart_data = {
         "date": chart.date.strftime("%Y-%m-%d %H:%M:%S"),
-        "entries": [
-            {
-                "rank": entry.rank,
-                "title": entry.title,
-                "artist": entry.artist,
-                "lastPos": entry.lastPos,
-                "isNew": entry.isNew,
-                "image": entry.image,
-            }
-            for entry in chart.entries
-        ],
+        "entries": []
     }
-    with open(JSON_PATH, "w", encoding="utf-8") as f:
-        json.dump(chart_data, f, ensure_ascii=False, indent=4)
-    print(f"✅ JSON 저장 완료: {JSON_PATH}")
+    for entry in chart.entries:
+        print(f"📊 차트 데이터 처리: {entry.rank}. {entry.title} - {entry.artist}")
+        artist_id = search_artist_id(entry.artist)
+        genre = get_artist_genre(artist_id)
+        chart_data["entries"].append({
+            "rank": entry.rank,
+            "title": entry.title,
+            "artist": entry.artist,
+            "lastPos": entry.lastPos,
+            "isNew": entry.isNew,
+            "image": entry.image,
+            "genre": genre
+        })
+    return chart_data
 
 
 # 2. JSON → CSV 변환
-def convert_json_to_csv():
-    with open(JSON_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    fields = ["rank", "title", "artist", "lastPos", "isNew", "image"]
-    with open(CSV_PATH, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fields)
-        writer.writeheader()
-        for entry in data["entries"]:
-            writer.writerow(entry)
-    print(f"✅ CSV 변환 완료: {CSV_PATH}")
+def convert_json_to_csv(**kwargs):
+    ti = kwargs["ti"]
+    data = ti.xcom_pull(task_ids="fetch_flo_chart")
+    csv_data = [["rank", "title", "artist", "lastPos", "isNew", "image", "genre"]]
+    for entry in data["entries"]:
+        csv_data.append([
+            entry["rank"], entry["title"], entry["artist"], entry["lastPos"], entry["isNew"], entry["image"], entry["genre"]
+        ])
+    csv_string = "\n".join(",".join(map(str, row)) for row in csv_data)
+    return csv_string
+
+# 3. 로컬에 CSV 저장 (테스트용)
+def save_csv_locally(csv_string):
+    with open(LOCAL_FILE_PATH, "w", encoding="utf-8") as f:
+        f.write(csv_string)
+
+# 4. AWS S3 업로드
+def upload_to_s3(**kwargs):
+    ti = kwargs["ti"]
+    csv_string = ti.xcom_pull(task_ids="convert_json_to_csv")
+    #save_csv_locally(csv_string)  # 테스트용 로컬 저장
+    s3_hook = S3Hook(aws_conn_id="S4tify_S3")
+    s3_hook.load_string(csv_string, key=S3_CSV_KEY, bucket_name=S3_BUCKET, replace=True)
+    print(f"✅ S3 업로드 완료: {S3_CSV_KEY}")
 
 
 # DAG 설정
@@ -110,38 +116,29 @@ with DAG(
     schedule_interval="20 0 * * *",  # 매일 00:20 실행
     catchup=False,
 ) as dag:
+    
+    get_spotify_token_task = PythonOperator(
+    task_id="get_spotify_token",
+    python_callable=get_token,  # ✅ 먼저 실행해서 Variable 갱신
+    provide_context=True,
+    )
 
     fetch_flo_chart_task = PythonOperator(
         task_id="fetch_flo_chart",
         python_callable=fetch_flo_chart,
+        provide_context=True,
     )
-
+    
     convert_json_to_csv_task = PythonOperator(
         task_id="convert_json_to_csv",
         python_callable=convert_json_to_csv,
+        provide_context=True,
     )
-
-    """upload_json_to_s3_task = PythonOperator(
-        task_id="upload_json_to_s3",
+    
+    upload_s3_task = PythonOperator(
+        task_id="upload_to_s3",
         python_callable=upload_to_s3,
-        op_kwargs={"file_path": JSON_PATH, "bucket_name": S3_BUCKET, "object_name": S3_JSON_KEY},
-    )"""
-
-    upload_csv_to_s3_task = PythonOperator(
-        task_id="upload_csv_to_s3",
-        python_callable=upload_to_s3,
-        op_kwargs={
-            "file_path": CSV_PATH,
-            "bucket_name": S3_BUCKET,
-            "object_name": S3_CSV_KEY,
-        },
+        provide_context=True,
     )
-
-    """save_to_snowflake_task = PythonOperator(
-        task_id="save_to_snowflake",
-        python_callable=save_to_snowflake,
-    )"""
-
-    # 작업 순서 정의
-    (fetch_flo_chart_task >> convert_json_to_csv_task >>
-     upload_csv_to_s3_task)  # save_to_snowflake_task
+    
+    get_spotify_token_task >> fetch_flo_chart_task >> convert_json_to_csv_task >> upload_s3_task
