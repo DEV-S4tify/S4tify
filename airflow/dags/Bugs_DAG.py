@@ -17,7 +17,7 @@ TODAY = datetime.now().strftime("%Y%m%d")
 
 
 S3_BUCKET = "de5-s4tify"
-S3_CSV_KEY = f"raw_data/bugs_chart_with_genre_{TODAY}.csv"
+S3_CSV_KEY = f"raw_data/bugs_chart_data/bugs_chart_with_{TODAY}.csv"
 LOCAL_FILE_PATH = f"/opt/airflow/data/bugs_chart_with_genre_{TODAY}.csv"
 
 
