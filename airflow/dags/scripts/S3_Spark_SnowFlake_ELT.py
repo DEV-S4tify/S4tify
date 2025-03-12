@@ -91,7 +91,7 @@ def check_and_create_table():
 def escape_quotes(value):
     if value is None:
         return "NULL"  # None인 경우에는 'NULL'로 처리
-    return f"'{value.replace('\'', '\'\'')}'"  # 작은따옴표는 두 개로 이스케이프 처리
+    return "'{}'".format(value.replace("'", "''"))  # 작은따옴표는 두 개로 이스케이프 처리
 
 # Snowflake에서 SQL 실행 함수
 def insert_data_into_snowflake(df, table_name):
