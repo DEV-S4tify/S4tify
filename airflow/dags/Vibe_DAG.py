@@ -17,7 +17,7 @@ TODAY = datetime.now().strftime("%Y%m%d")
 
 # S3 설정
 S3_BUCKET = "de5-s4tify"
-S3_CSV_KEY = f"raw_data/vibe_chart_{TODAY}.csv"
+S3_CSV_KEY = f"raw_data/vibe_chart_data/vibe_chart_{TODAY}.csv"
 LOCAL_FILE_PATH = f"/opt/airflow/data/vibe_chart_with_genre_{TODAY}.csv"
 
 
