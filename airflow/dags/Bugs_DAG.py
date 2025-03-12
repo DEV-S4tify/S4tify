@@ -7,7 +7,6 @@ from plugins.bugs import BugsChartPeriod, BugsChartType, ChartData
 from plugins.get_artist_data import get_artist_genre, search_artist_id
 from scripts.get_access_token import get_token
 
-
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
@@ -28,16 +27,14 @@ def fetch_bugs_chart():
         chartType=BugsChartType.All,
         chartPeriod=BugsChartPeriod.Realtime,
         fetch=True)
-    chart_data = {
-        "date": chart.date.strftime("%Y-%m-%d %H:%M:%S"),
-        "entries": []
-        }
+    chart_data = {"date": chart.date.strftime(
+        "%Y-%m-%d %H:%M:%S"), "entries": []}
     for entry in chart.entries:
         print(f"📊 차트 데이터 처리: {entry.rank}. {entry.title} - {entry.artist}")
-        
+
         artist_id = search_artist_id(entry.artist)
         genre = get_artist_genre(artist_id)
-        
+
         chart_data["entries"].append(
             {
                 "rank": entry.rank,
@@ -46,7 +43,7 @@ def fetch_bugs_chart():
                 "lastPos": entry.lastPos,
                 "peakPos": entry.peakPos,
                 "image": entry.image,
-                "genres": genre.split(", ") if genre else []  # ✅ 리스트 변환,
+                "genres": genre.split(", ") if genre else [],  # ✅ 리스트 변환,
             }
         )
     return chart_data
@@ -56,7 +53,8 @@ def fetch_bugs_chart():
 def convert_json_to_csv(**kwargs):
     ti = kwargs["ti"]
     data = ti.xcom_pull(task_ids="fetch_bugs_chart")
-    csv_data = [["rank", "title", "artist", "lastPos", "peakPos", "image", "genre"]]
+    csv_data = [["rank", "title", "artist",
+                 "lastPos", "peakPos", "image", "genre"]]
     for entry in data["entries"]:
         csv_data.append(
             [
@@ -66,7 +64,9 @@ def convert_json_to_csv(**kwargs):
                 entry["lastPos"],
                 entry["peakPos"],
                 entry["image"],
-                json.dumps(entry["genres"], ensure_ascii=False)  # ✅ 리스트를 문자열로 변환하여 저장
+                json.dumps(
+                    entry["genres"], ensure_ascii=False
+                ),  # ✅ 리스트를 문자열로 변환하여 저장
             ]
         )
     csv_string = "\n".join(",".join(map(str, row)) for row in csv_data)
@@ -83,7 +83,7 @@ def save_csv_locally(csv_string):
 def upload_to_s3(**kwargs):
     ti = kwargs["ti"]
     csv_string = ti.xcom_pull(task_ids="convert_json_to_csv")
-    #save_csv_locally(csv_string)  # 테스트용 로컬 저장
+    # save_csv_locally(csv_string)  # 테스트용 로컬 저장
     s3_hook = S3Hook(aws_conn_id="S4tify_S3")
     s3_hook.load_string(
         csv_string,
@@ -133,4 +133,9 @@ with DAG(
         provide_context=True,
     )
 
-    get_spotify_token_task >> fetch_bugs_chart_task >> convert_json_to_csv_task >> upload_s3_task
+    (
+        get_spotify_token_task
+        >> fetch_bugs_chart_task
+        >> convert_json_to_csv_task
+        >> upload_s3_task
+    )

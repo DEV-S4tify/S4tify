@@ -20,6 +20,7 @@ S3_BUCKET = "de5-s4tify"
 S3_CSV_KEY = f"raw_data/genie_chart_{TODAY}.csv"
 LOCAL_FILE_PATH = f"/opt/airflow/data/genie_chart_with_genre_{TODAY}.csv"
 
+
 # 1. Genie 차트 데이터 가져오기 및 JSON 변환
 def fetch_genie_chart():
     chart = ChartData(chartPeriod=GenieChartPeriod.Realtime, fetch=True)
@@ -37,7 +38,7 @@ def fetch_genie_chart():
                 "peakPos": entry.peakPos,
                 "lastPos": entry.lastPos,
                 "image": entry.image,
-                "genres": genre.split(", ") if genre else []
+                "genres": genre.split(", ") if genre else [],
             }
         )
     return chart_data
@@ -47,7 +48,8 @@ def fetch_genie_chart():
 def convert_json_to_csv(**kwargs):
     ti = kwargs["ti"]
     data = ti.xcom_pull(task_ids="fetch_genie_chart")
-    csv_data = [["rank", "title", "artist", "peakPos", "lastPos", "image", "genre"]]
+    csv_data = [["rank", "title", "artist",
+                 "peakPos", "lastPos", "image", "genre"]]
     for entry in data["entries"]:
         csv_data.append(
             [
@@ -57,7 +59,7 @@ def convert_json_to_csv(**kwargs):
                 entry["peakPos"],
                 entry["lastPos"],
                 entry["image"],
-                json.dumps(entry["genres"], ensure_ascii=False)
+                json.dumps(entry["genres"], ensure_ascii=False),
             ]
         )
     csv_string = "\n".join(",".join(map(str, row)) for row in csv_data)
@@ -74,7 +76,7 @@ def save_csv_locally(csv_string):
 def upload_to_s3(**kwargs):
     ti = kwargs["ti"]
     csv_string = ti.xcom_pull(task_ids="convert_json_to_csv")
-    #save_csv_locally(csv_string)  # 테스트용 로컬 저장
+    # save_csv_locally(csv_string)  # 테스트용 로컬 저장
     s3_hook = S3Hook(aws_conn_id="S4tify_S3")
     s3_hook.load_string(
         csv_string,
@@ -124,4 +126,9 @@ with DAG(
         provide_context=True,
     )
 
-    get_spotify_token_task >> fetch_genie_chart_task >> convert_json_to_csv_task >> upload_s3_task
+    (
+        get_spotify_token_task
+        >> fetch_genie_chart_task
+        >> convert_json_to_csv_task
+        >> upload_s3_task
+    )

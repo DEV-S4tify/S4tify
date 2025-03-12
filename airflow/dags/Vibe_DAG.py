@@ -3,8 +3,8 @@ import json
 from datetime import datetime, timedelta
 
 import requests
-from plugins.vibe import ChartData  # vibe.py 모듈 import
 from plugins.get_artist_data import get_artist_genre, search_artist_id
+from plugins.vibe import ChartData  # vibe.py 모듈 import
 from scripts.get_access_token import get_token
 
 from airflow import DAG
@@ -19,6 +19,7 @@ TODAY = datetime.now().strftime("%Y%m%d")
 S3_BUCKET = "de5-s4tify"
 S3_CSV_KEY = f"raw_data/vibe_chart_{TODAY}.csv"
 LOCAL_FILE_PATH = f"/opt/airflow/data/vibe_chart_with_genre_{TODAY}.csv"
+
 
 # 1. VIBE 차트 데이터 가져오기 및 JSON 변환
 def fetch_vibe_chart():
@@ -37,7 +38,7 @@ def fetch_vibe_chart():
                 "lastPos": entry.lastPos,
                 "isNew": entry.isNew,
                 "image": entry.image,
-                "genres": genre.split(", ") if genre else []
+                "genres": genre.split(", ") if genre else [],
             }
         )
     return chart_data
@@ -47,7 +48,8 @@ def fetch_vibe_chart():
 def convert_json_to_csv(**kwargs):
     ti = kwargs["ti"]
     data = ti.xcom_pull(task_ids="fetch_vibe_chart")
-    csv_data = [["rank", "title", "artist", "lastPos", "isNew", "image", "genre"]]
+    csv_data = [["rank", "title", "artist",
+                 "lastPos", "isNew", "image", "genre"]]
     for entry in data["entries"]:
         csv_data.append(
             [
@@ -57,7 +59,7 @@ def convert_json_to_csv(**kwargs):
                 entry["lastPos"],
                 entry["isNew"],
                 entry["image"],
-                json.dumps(entry["genres"], ensure_ascii=False)
+                json.dumps(entry["genres"], ensure_ascii=False),
             ]
         )
     csv_string = "\n".join(",".join(map(str, row)) for row in csv_data)
@@ -74,7 +76,7 @@ def save_csv_locally(csv_string):
 def upload_to_s3(**kwargs):
     ti = kwargs["ti"]
     csv_string = ti.xcom_pull(task_ids="convert_json_to_csv")
-    #save_csv_locally(csv_string)  # 테스트용 로컬 저장
+    # save_csv_locally(csv_string)  # 테스트용 로컬 저장
     s3_hook = S3Hook(aws_conn_id="S4tify_S3")
     s3_hook.load_string(
         csv_string,

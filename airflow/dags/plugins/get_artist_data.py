@@ -1,12 +1,12 @@
 import requests
-
-
 from scripts.get_access_token import get_token
+
 from airflow.models import Variable
 
 # Spotify API 설정
 SPOTIFY_API_URL = "https://api.spotify.com/v1"
 SPOTIFY_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN", default_var=None)
+
 
 # Spotify API에서 아티스트 ID 검색
 def search_artist_id(artist_name):
