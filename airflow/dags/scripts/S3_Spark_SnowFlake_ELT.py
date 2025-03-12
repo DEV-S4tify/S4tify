@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
+
 import snowflake.connector
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, lit, when, count
+from pyspark.sql.functions import col, count, lit, when
+
 from airflow.models import Variable
 
 # Spark JARs 설정
@@ -22,25 +24,36 @@ SNOWFLAKE_OPTIONS = {
     "account": Variable.get("SNOWFLAKE_ACCOUNT"),
     "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
     "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
-    "schema": Variable.get("SNOWFLAKE_SCHEMA") if Variable.get("SNOWFLAKE_SCHEMA") else "raw_data",
+    "schema": (
+        Variable.get("SNOWFLAKE_SCHEMA")
+        if Variable.get("SNOWFLAKE_SCHEMA")
+        else "raw_data"
+    ),
     "role": "ACCOUNTADMIN",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
     "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
-    #"url" : "jdbc:snowflake://kjqeovi-gr23658.snowflakecomputing.com",
+    # "url" : "jdbc:snowflake://kjqeovi-gr23658.snowflakecomputing.com",
 }
+
 
 # Spark Session 생성 함수
 def spark_session_builder(app_name: str) -> SparkSession:
     return (
-        SparkSession.builder.appName(app_name)
-        .config("spark.jars", SPARK_JARS)
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.access.key", Variable.get("AWS_ACCESS_KEY"))
-        .config("spark.hadoop.fs.s3a.secret.key", Variable.get("AWS_SECRET_KEY"))
-        .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
-        .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-        .getOrCreate()
-    )
+        SparkSession.builder.appName(app_name) .config(
+            "spark.jars",
+            SPARK_JARS) .config(
+            "spark.hadoop.fs.s3a.impl",
+            "org.apache.hadoop.fs.s3a.S3AFileSystem") .config(
+                "spark.hadoop.fs.s3a.access.key",
+                Variable.get("AWS_ACCESS_KEY")) .config(
+                    "spark.hadoop.fs.s3a.secret.key",
+                    Variable.get("AWS_SECRET_KEY")) .config(
+                        "spark.hadoop.fs.s3a.endpoint",
+                        "s3.amazonaws.com") .config(
+                            "spark.hadoop.fs.s3a.aws.credentials.provider",
+                            "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
+        ) .getOrCreate())
+
 
 # Snowflake에서 SQL 실행 함수
 def check_and_create_table():
@@ -59,7 +72,7 @@ def check_and_create_table():
         # 테이블 존재 여부 확인
         cur.execute(f"SHOW TABLES LIKE 'music_charts'")
         result = cur.fetchone()
-        
+
         if result is None:
             # 테이블이 존재하지 않으면 생성
             create_table_query = """
@@ -91,7 +104,10 @@ def check_and_create_table():
 def escape_quotes(value):
     if value is None:
         return "NULL"  # None인 경우에는 'NULL'로 처리
-    return "'{}'".format(value.replace("'", "''"))  # 작은따옴표는 두 개로 이스케이프 처리
+    return "'{}'".format(
+        value.replace("'", "''")
+    )  # 작은따옴표는 두 개로 이스케이프 처리
+
 
 # Snowflake에서 SQL 실행 함수
 def insert_data_into_snowflake(df, table_name):
@@ -110,15 +126,27 @@ def insert_data_into_snowflake(df, table_name):
         # DataFrame을 순회하며 INSERT 쿼리 실행
         for row in df.collect():
             # None 값을 NULL로 처리하고, 문자열 값은 작은따옴표로 감쌈
-            rank = f"NULL" if row['rank'] is None else row['rank']
-            title = escape_quotes(f"NULL" if row['title'] is None else f"'{row['title']}'")
-            artist = escape_quotes(f"NULL" if row['artist'] is None else f"'{row['artist']}'")
-            lastPos = f"NULL" if row['lastPos'] is None else row['lastPos']
-            image = escape_quotes(f"NULL" if row['image'] is None else f"'{row['image']}'")
-            peakPos = f"NULL" if row['peakPos'] is None else row['peakPos']
+            rank = f"NULL" if row["rank"] is None else row["rank"]
+            title = escape_quotes(
+                f"NULL" if row["title"] is None else f"'{row['title']}'"
+            )
+            artist = escape_quotes(
+                f"NULL" if row["artist"] is None else f"'{row['artist']}'"
+            )
+            lastPos = f"NULL" if row["lastPos"] is None else row["lastPos"]
+            image = escape_quotes(
+                f"NULL" if row["image"] is None else f"'{row['image']}'"
+            )
+            peakPos = f"NULL" if row["peakPos"] is None else row["peakPos"]
             # isNew 값은 TRUE/FALSE로 처리하고 NULL은 그대로 처리
-            isNew = f"NULL" if row['isNew'] is None else ("True" if row['isNew'] else "FALSE")
-            source = escape_quotes(f"NULL" if row['source'] is None else f"'{row['source']}'")
+            isNew = (
+                f"NULL"
+                if row["isNew"] is None
+                else ("True" if row["isNew"] else "FALSE")
+            )
+            source = escape_quotes(
+                f"NULL" if row["source"] is None else f"'{row['source']}'"
+            )
 
             # 삽입할 쿼리 (컬럼 이름은 큰따옴표 없이)
             query = f"""
@@ -136,8 +164,6 @@ def insert_data_into_snowflake(df, table_name):
         print(f"⚠️ Error inserting data into Snowflake: {e}")
 
 
-
-
 # Spark 세션 생성
 spark = spark_session_builder("S3_to_Snowflake")
 
@@ -149,16 +175,23 @@ chart_sources = {
     "flo": f"{S3_BUCKET}/raw_data/flo_chart/flo_chart_{TODAY}.csv",
     "genie": f"{S3_BUCKET}/raw_data/genie_chart/genie_chart_{TODAY}.csv",
     "melon": f"{S3_BUCKET}/raw_data/melon_chart/melon_chart_{TODAY}.csv",
-    "vibe": f"{S3_BUCKET}/raw_data/vibe_chart/vibe_chart_{TODAY}.csv"
+    "vibe": f"{S3_BUCKET}/raw_data/vibe_chart/vibe_chart_{TODAY}.csv",
 }
+
 
 def read_chart_data(source, path):
     try:
-        df = spark.read.format("csv").option("header", True).option("inferSchema", True).load(path)
+        df = (
+            spark.read.format("csv")
+            .option("header", True)
+            .option("inferSchema", True)
+            .load(path)
+        )
         return df.withColumn("source", lit(source))
     except Exception as e:
         print(f"⚠️ {source} 데이터 로드 실패: {e}")
         return None
+
 
 # 차트 데이터 읽기 및 병합
 dfs = [read_chart_data(source, path) for source, path in chart_sources.items()]
@@ -173,14 +206,22 @@ if dfs:
         merged_df = merged_df.unionByName(df, allowMissingColumns=True)
 
     final_df = merged_df.select(
-        when(col("rank").rlike("^[0-9]+$"), col("rank").cast("int")).alias("rank"),
+        when(
+            col("rank").rlike("^[0-9]+$"),
+            col("rank").cast("int")).alias("rank"),
         col("title"),
         col("artist"),
-        when(col("lastPos").rlike("^[0-9]+$"), col("lastPos").cast("int")).alias("lastPos"),
+        when(
+            col("lastPos").rlike("^[0-9]+$"),
+            col("lastPos").cast("int")).alias("lastPos"),
         col("image"),
-        when(col("peakPos").rlike("^[0-9]+$"), col("peakPos").cast("int")).alias("peakPos"),
-        when(col("isNew").rlike("^(true|false)$"), col("isNew").cast("boolean")).alias("isNew"),
-        col("source")
+        when(
+                col("peakPos").rlike("^[0-9]+$"),
+                col("peakPos").cast("int")).alias("peakPos"),
+        when(
+                    col("isNew").rlike("^(true|false)$"),
+                    col("isNew").cast("boolean")).alias("isNew"),
+        col("source"),
     )
 
     final_df.show(40)
