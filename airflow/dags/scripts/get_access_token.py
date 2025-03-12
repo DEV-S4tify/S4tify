@@ -8,6 +8,7 @@ from airflow.models import Variable
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+
 END_POINT = "https://accounts.spotify.com/api/token"
 
 

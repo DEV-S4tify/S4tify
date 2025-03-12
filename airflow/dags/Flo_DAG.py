@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import requests
 from plugins.flo import ChartData  # flo.py 모듈 import
+from plugins.get_artist_data import get_artist_genre, search_artist_id
 from scripts.get_access_token import get_token
 
 from airflow import DAG
@@ -18,42 +19,6 @@ TODAY = datetime.now().strftime("%Y%m%d")
 S3_BUCKET = "de5-s4tify"
 S3_CSV_KEY = f"raw_data/flo_chart_{TODAY}.csv"
 LOCAL_FILE_PATH = f"/opt/airflow/data/flo_chart_with_genre_{TODAY}.csv"
-
-# Spotify API 설정
-SPOTIFY_API_URL = "https://api.spotify.com/v1"
-SPOTIFY_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN", default_var=None)
-
-
-# Spotify API에서 아티스트 ID 검색
-def search_artist_id(artist_name):
-    SPOTIFY_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN", default_var=None)
-    url = f"{SPOTIFY_API_URL}/search"
-    headers = {"Authorization": f"Bearer {SPOTIFY_TOKEN}"}
-    params = {"q": artist_name, "type": "artist", "limit": 1}
-    response = requests.get(url, headers=headers, params=params)
-
-    if response.status_code == 200:
-        artists = response.json().get("artists", {}).get("items", [])
-        artist_id = artists[0]["id"] if artists else None
-        return artist_id
-    return None
-
-
-# Spotify API에서 아티스트 장르 가져오기
-def get_artist_genre(artist_id):
-    if not artist_id:
-        return "Unknown"
-
-    SPOTIFY_TOKEN = Variable.get("SPOTIFY_ACCESS_TOKEN", default_var=None)
-    url = f"{SPOTIFY_API_URL}/artists/{artist_id}"
-    headers = {"Authorization": f"Bearer {SPOTIFY_TOKEN}"}
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        genres = response.json().get("genres", [])
-        return ", ".join(genres) if genres else "Unknown"
-    return "Unknown"
-
 
 # 1. FLO 차트 데이터 가져오기 및 JSON 변환
 def fetch_flo_chart():
@@ -72,7 +37,7 @@ def fetch_flo_chart():
                 "lastPos": entry.lastPos,
                 "isNew": entry.isNew,
                 "image": entry.image,
-                "genre": genre,
+                "genres": genre.split(", ") if genre else []
             }
         )
     return chart_data
@@ -82,8 +47,7 @@ def fetch_flo_chart():
 def convert_json_to_csv(**kwargs):
     ti = kwargs["ti"]
     data = ti.xcom_pull(task_ids="fetch_flo_chart")
-    csv_data = [["rank", "title", "artist",
-                 "lastPos", "isNew", "image", "genre"]]
+    csv_data = [["rank", "title", "artist", "lastPos", "isNew", "image", "genre"]]
     for entry in data["entries"]:
         csv_data.append(
             [
@@ -93,7 +57,7 @@ def convert_json_to_csv(**kwargs):
                 entry["lastPos"],
                 entry["isNew"],
                 entry["image"],
-                entry["genre"],
+                json.dumps(entry["genres"], ensure_ascii=False)
             ]
         )
     csv_string = "\n".join(",".join(map(str, row)) for row in csv_data)
@@ -110,7 +74,7 @@ def save_csv_locally(csv_string):
 def upload_to_s3(**kwargs):
     ti = kwargs["ti"]
     csv_string = ti.xcom_pull(task_ids="convert_json_to_csv")
-    # save_csv_locally(csv_string)  # 테스트용 로컬 저장
+    #save_csv_locally(csv_string)  # 테스트용 로컬 저장
     s3_hook = S3Hook(aws_conn_id="S4tify_S3")
     s3_hook.load_string(
         csv_string,
