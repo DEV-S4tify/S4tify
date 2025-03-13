@@ -24,8 +24,8 @@ SNOWFLAKE_OPTIONS = {
     "account": Variable.get("SNOWFLAKE_ACCOUNT"),
     "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
     "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
-    #"schema": (Variable.get("SNOWFLAKE_SCHEMA")if Variable.get("SNOWFLAKE_SCHEMA")else "raw_data"),
-    "schema" : "RAW_DATA",
+    # "schema": (Variable.get("SNOWFLAKE_SCHEMA")if Variable.get("SNOWFLAKE_SCHEMA")else "raw_data"),
+    "schema": "RAW_DATA",
     "role": "ACCOUNTADMIN",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
     "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
@@ -67,11 +67,13 @@ def check_and_create_table():
         cur = conn.cursor()
 
         # 테이블 존재 여부 확인
-        cur.execute(f"""
-            SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES 
-            WHERE TABLE_SCHEMA = '{SNOWFLAKE_OPTIONS["schema"]}' 
+        cur.execute(
+            f"""
+            SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = '{SNOWFLAKE_OPTIONS["schema"]}'
             AND UPPER(TABLE_NAME) = 'MUSIC_CHARTS'
-        """)
+        """
+        )
         result = cur.fetchone()
 
         if result is None:
@@ -127,14 +129,26 @@ def insert_data_into_snowflake(df, table_name):
 
         for row in df.collect():
             rank = "NULL" if row["rank"] is None else row["rank"]
-            title = escape_quotes(row["title"]) if row["title"] is not None else "NULL"
-            artist = escape_quotes(row["artist"]) if row["artist"] is not None else "NULL"
-            genre = escape_quotes(row["genre"]) if row["genre"] is not None else "NULL"  # 🎵 genre 추가
+            title = escape_quotes(
+                row["title"]) if row["title"] is not None else "NULL"
+            artist = (
+                escape_quotes(
+                    row["artist"]) if row["artist"] is not None else "NULL")
+            genre = (
+                escape_quotes(
+                    row["genre"]) if row["genre"] is not None else "NULL")  # 🎵 genre 추가
             lastPos = "NULL" if row["lastPos"] is None else row["lastPos"]
-            image = escape_quotes(row["image"]) if row["image"] is not None else "NULL"
+            image = escape_quotes(
+                row["image"]) if row["image"] is not None else "NULL"
             peakPos = "NULL" if row["peakPos"] is None else row["peakPos"]
-            isNew = "NULL" if row["isNew"] is None else ("TRUE" if row["isNew"] else "FALSE")
-            source = escape_quotes(row["source"]) if row["source"] is not None else "NULL"
+            isNew = (
+                "NULL"
+                if row["isNew"] is None
+                else ("TRUE" if row["isNew"] else "FALSE")
+            )
+            source = (
+                escape_quotes(
+                    row["source"]) if row["source"] is not None else "NULL")
 
             query = f"""
                 INSERT INTO {table_name} (rank, title, artist, genre, lastPos, image, peakPos, isNew, source)
@@ -181,6 +195,7 @@ def read_chart_data(source, path):
         print(f"⚠️ {source} 데이터 로드 실패: {e}")
         return None
 
+
 # 차트 데이터 읽기 및 병합
 dfs = [read_chart_data(source, path) for source, path in chart_sources.items()]
 dfs = [df for df in dfs if df is not None]
@@ -194,14 +209,21 @@ if dfs:
         merged_df = merged_df.unionByName(df, allowMissingColumns=True)
 
     final_df = merged_df.select(
-        when(col("rank").rlike("^[0-9]+$"), col("rank").cast("int")).alias("rank"),
+        when(col("rank").rlike("^[0-9]+$"),
+             col("rank").cast("int")).alias("rank"),
         col("title"),
         col("artist"),
         col("genre"),  # ✅ genre 컬럼 추가
-        when(col("lastPos").rlike("^[0-9]+$"), col("lastPos").cast("int")).alias("lastPos"),
+        when(col("lastPos").rlike("^[0-9]+$"), col("lastPos").cast("int")).alias(
+            "lastPos"
+        ),
         col("image"),
-        when(col("peakPos").rlike("^[0-9]+$"), col("peakPos").cast("int")).alias("peakPos"),
-        when(col("isNew").rlike("^(true|false)$"), col("isNew").cast("boolean")).alias("isNew"),
+        when(col("peakPos").rlike("^[0-9]+$"), col("peakPos").cast("int")).alias(
+            "peakPos"
+        ),
+        when(col("isNew").rlike("^(true|false)$"), col("isNew").cast("boolean")).alias(
+            "isNew"
+        ),
         col("source"),
     )
 

@@ -1,7 +1,7 @@
 import csv
+import io
 import json
 from datetime import datetime, timedelta
-import io
 
 import requests
 from plugins.bugs import BugsChartPeriod, BugsChartType, ChartData
@@ -56,25 +56,32 @@ def convert_json_to_csv(**kwargs):
     data = ti.xcom_pull(task_ids="fetch_bugs_chart")
 
     output = io.StringIO()
-    writer = csv.writer(output, quoting=csv.QUOTE_ALL)  # ✅ 모든 필드를 자동으로 따옴표 처리
+    writer = csv.writer(
+        output, quoting=csv.QUOTE_ALL
+    )  # ✅ 모든 필드를 자동으로 따옴표 처리
 
     # 헤더 추가
-    writer.writerow(["rank", "title", "artist", "lastPos", "peakPos", "image", "genre"])
+    writer.writerow(["rank", "title", "artist", "lastPos",
+                    "peakPos", "image", "genre"])
 
     # 데이터 추가
     for entry in data["entries"]:
-        genres = json.dumps(entry["genres"], ensure_ascii=False)  # 리스트를 문자열로 변환
+        genres = json.dumps(
+            entry["genres"], ensure_ascii=False
+        )  # 리스트를 문자열로 변환
         # 이중 따옴표가 포함되면 한번만 보이도록 처리
         genres = genres.replace('""', '"')  # 이중 따옴표를 하나로 바꿈
-        writer.writerow([
-            entry["rank"],
-            entry["title"],
-            entry["artist"],
-            entry["lastPos"],
-            entry["peakPos"],
-            entry["image"],
-            genres,
-        ])
+        writer.writerow(
+            [
+                entry["rank"],
+                entry["title"],
+                entry["artist"],
+                entry["lastPos"],
+                entry["peakPos"],
+                entry["image"],
+                genres,
+            ]
+        )
 
     return output.getvalue()
 

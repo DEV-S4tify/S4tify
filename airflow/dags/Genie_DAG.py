@@ -1,6 +1,6 @@
 import csv
-import json
 import io
+import json
 from datetime import datetime, timedelta
 
 import requests
@@ -25,7 +25,8 @@ LOCAL_FILE_PATH = f"/opt/airflow/data/genie_chart_with_genre_{TODAY}.csv"
 # 1. Genie 차트 데이터 가져오기 및 JSON 변환
 def fetch_genie_chart():
     chart = ChartData(chartPeriod=GenieChartPeriod.Realtime, fetch=True)
-    chart_data = {"date": chart.date.strftime("%Y-%m-%d %H:%M:%S"), "entries": []}
+    chart_data = {"date": chart.date.strftime(
+        "%Y-%m-%d %H:%M:%S"), "entries": []}
 
     for entry in chart.entries:
         print(f"📊 차트 데이터 처리: {entry.rank}. {entry.title} - {entry.artist}")
@@ -34,14 +35,14 @@ def fetch_genie_chart():
 
         chart_data["entries"].append(
             {
-            "rank": entry.rank,
-            "title": entry.title,
-            "artist": entry.artist,
-            "peakPos": entry.peakPos,
-            "lastPos": entry.lastPos,
-            "image": entry.image,
-            "genres": genre.split(", ") if genre else [],
-        }
+                "rank": entry.rank,
+                "title": entry.title,
+                "artist": entry.artist,
+                "peakPos": entry.peakPos,
+                "lastPos": entry.lastPos,
+                "image": entry.image,
+                "genres": genre.split(", ") if genre else [],
+            }
         )
 
     return chart_data
@@ -53,27 +54,35 @@ def convert_json_to_csv(**kwargs):
     data = ti.xcom_pull(task_ids="fetch_genie_chart")
 
     output = io.StringIO()
-    writer = csv.writer(output, quoting=csv.QUOTE_ALL)  # ✅ 모든 필드를 자동으로 따옴표 처리
+    writer = csv.writer(
+        output, quoting=csv.QUOTE_ALL
+    )  # ✅ 모든 필드를 자동으로 따옴표 처리
 
     # 헤더 추가
-    writer.writerow(["rank", "title", "artist", "peakPos", "lastPos", "image", "genre"])
+    writer.writerow(["rank", "title", "artist", "peakPos",
+                    "lastPos", "image", "genre"])
 
     # 데이터 추가
     for entry in data["entries"]:
-        genres = json.dumps(entry["genres"], ensure_ascii=False)  # 리스트를 문자열로 변환
+        genres = json.dumps(
+            entry["genres"], ensure_ascii=False
+        )  # 리스트를 문자열로 변환
         # 이중 따옴표가 포함되면 한번만 보이도록 처리
         genres = genres.replace('""', '"')  # 이중 따옴표를 하나로 바꿈
-        writer.writerow([
-            entry["rank"],
-            entry["title"],
-            entry["artist"],
-            entry["peakPos"],
-            entry["lastPos"],
-            entry["image"],
-            genres,
-        ])
+        writer.writerow(
+            [
+                entry["rank"],
+                entry["title"],
+                entry["artist"],
+                entry["peakPos"],
+                entry["lastPos"],
+                entry["image"],
+                genres,
+            ]
+        )
 
     return output.getvalue()
+
 
 # 3. 로컬에 CSV 저장 (테스트용, 삭제 용이하도록 별도 함수)
 def save_csv_locally(csv_string):

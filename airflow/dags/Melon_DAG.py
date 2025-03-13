@@ -1,6 +1,6 @@
 import csv
-import json
 import io
+import json
 from datetime import datetime, timedelta
 
 import requests
@@ -25,8 +25,9 @@ LOCAL_FILE_PATH = f"/opt/airflow/data/melon_chart_with_genre_{TODAY}.csv"
 # 1. 멜론 차트 데이터 가져오기
 def fetch_melon_chart():
     chart = ChartData(fetch=True)
-    chart_data = {"date": chart.date.strftime("%Y-%m-%d %H:%M:%S"), "entries": []}
-    
+    chart_data = {"date": chart.date.strftime(
+        "%Y-%m-%d %H:%M:%S"), "entries": []}
+
     for entry in chart.entries:
         print(f"📊 차트 데이터 처리: {entry.rank}. {entry.title} - {entry.artist}")
         artist_id = search_artist_id(entry.artist)
@@ -50,28 +51,35 @@ def fetch_melon_chart():
 def convert_json_to_csv(**kwargs):
     ti = kwargs["ti"]
     data = ti.xcom_pull(task_ids="fetch_melon_chart")
-    
+
     output = io.StringIO()
-    writer = csv.writer(output, quoting=csv.QUOTE_ALL)  # ✅ 모든 필드를 자동으로 따옴표 처리
-    
+    writer = csv.writer(
+        output, quoting=csv.QUOTE_ALL
+    )  # ✅ 모든 필드를 자동으로 따옴표 처리
+
     # 헤더 추가
-    writer.writerow(["rank", "title", "artist", "lastPos", "isNew", "image", "genre"])
+    writer.writerow(["rank", "title", "artist",
+                    "lastPos", "isNew", "image", "genre"])
 
     # 데이터 추가
     for entry in data["entries"]:
-        genres = json.dumps(entry["genres"], ensure_ascii=False)  # 리스트를 문자열로 변환
+        genres = json.dumps(
+            entry["genres"], ensure_ascii=False
+        )  # 리스트를 문자열로 변환
         # 이중 따옴표가 포함되면 한번만 보이도록 처리
         genres = genres.replace('""', '"')  # 이중 따옴표를 하나로 바꿈
 
-        writer.writerow([
-            entry["rank"],
-            entry["title"],
-            entry["artist"],
-            entry["lastPos"],
-            entry["isNew"],
-            entry["image"],
-            genres,
-        ])
+        writer.writerow(
+            [
+                entry["rank"],
+                entry["title"],
+                entry["artist"],
+                entry["lastPos"],
+                entry["isNew"],
+                entry["image"],
+                genres,
+            ]
+        )
 
     return output.getvalue()
 
