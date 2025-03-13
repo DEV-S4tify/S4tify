@@ -107,10 +107,8 @@ def check_and_create_table():
 # 문자열에서 작은따옴표 처리 및 NULL 값 처리
 def escape_quotes(value):
     if value is None:
-        return "NULL"  # None인 경우에는 'NULL'로 처리
-    return "'{}'".format(
-        value.replace("'", "''")
-    )  # 작은따옴표는 두 개로 이스케이프 처리
+        return "NULL"
+    return "'{}'".format(value.replace("'", "''"))
 
 
 # Snowflake에서 SQL 실행 함수
