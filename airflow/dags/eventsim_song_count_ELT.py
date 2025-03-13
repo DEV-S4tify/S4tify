@@ -47,4 +47,4 @@ run_snowflake_query = SnowflakeOperator (
 )
 
 if __name__ == "__main__":
-    trigger_dag_task
+    trigger_dag_task >> run_snowflake_query
