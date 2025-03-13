@@ -9,7 +9,6 @@ from kafka import KafkaAdminClient
 from kafka.admin import NewTopic
 from kafka.errors import TopicAlreadyExistsError
 from kafka.producer import KafkaProducer
-
 from model.music_streaming import EventLog
 from utils.docker_utils import get_container_id, is_container_running
 from utils.schema_utils import register_schema
