@@ -8,6 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from scripts.load_spotify_data import *
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 
@@ -23,11 +24,14 @@ def make_dataframe():
 
 
 # 크롤링 데이터를 csv로 저장
-def save_as_csv_file(df):
+def save_as_csv_file(df, logical_date):
+    
+    file_path = f"data/spotify_crawling_data_{logical_date}.csv"
 
-    file_path = f"data/spotify_crawling_data_{TODAY}.csv"
+    df.index.name = 'rank'
+    df.to_csv(file_path, encoding='utf-8', mode='w', header=True, index=True)
+    load_s3_bucket(f'spotify_crawling_data_{logical_date}.csv')
 
-    df.to_csv(file_path, encoding="utf-8", mode="w", header=True, index=False)
 
 
 def data_crawling():
@@ -51,15 +55,16 @@ def data_crawling():
             print("크롤링 시작")
 
             driver.get(url)
-            driver.implicitly_wait(20)
+            driver.implicitly_wait(200)
 
             try:
+                scroll_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div/div[2]/div[2]')
+                driver.execute_script("""
+                                    arguments[0].scrollIntoView({behavior: 'smooth', block: 'end'}); 
+                                    """, scroll_element)
                 # top50 리스트 가져오기
                 driver.implicitly_wait(100)
-                driver.execute_script(
-                    "window.scrollTo(0, document.body.scrollHeight);")
-                # 페이지 로딩 대기
-                time.sleep(2)
+                
                 song_lists = driver.find_elements(
                     By.XPATH, '//*[@id="main"]//div[@role="row"]'
                 )
