@@ -51,15 +51,16 @@ def data_crawling():
             print("크롤링 시작")
 
             driver.get(url)
-            driver.implicitly_wait(20)
+            driver.implicitly_wait(300)
 
             try:
                 # top50 리스트 가져오기
-                driver.implicitly_wait(100)
-                driver.execute_script(
-                    "window.scrollTo(0, document.body.scrollHeight);")
+                scroll_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[2]/div[5]/div/div[2]/div[2]/div/main/section/div[2]/div[3]/div/div[1]/div/div[2]/div[2]')
+                driver.execute_script("""
+                                arguments[0].scrollIntoView({behavior: 'smooth', block: 'end'}); 
+                                """, scroll_element)
                 # 페이지 로딩 대기
-                time.sleep(2)
+                driver.implicitly_wait(30)
                 song_lists = driver.find_elements(
                     By.XPATH, '//*[@id="main"]//div[@role="row"]'
                 )

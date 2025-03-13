@@ -5,6 +5,7 @@ from scripts.request_spotify_api import *
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 
 default_args = {
     "depends_on_past": False,
@@ -39,7 +40,13 @@ with DAG(
         python_callable=get_arti_top10,
         op_kwargs={"logical_date": "{{ ds }}"},
     )
+    
+    remove_crawling_data = BashOperator(
+        task_id = 'remove_crawling_data',
+        bash_command='rm -f /opt/airflow/data/spotify_crawling_data_{{ ds }}.csv',
+        dag=dag
+    )
 
     extract_globalTop50_data >> [
         extract_artistInfo_data,
-        extract_artistTop10_data]
+        extract_artistTop10_data] >> remove_crawling_data
