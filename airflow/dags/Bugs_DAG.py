@@ -1,4 +1,5 @@
 import csv
+import io
 import json
 from datetime import datetime, timedelta
 
@@ -53,10 +54,24 @@ def fetch_bugs_chart():
 def convert_json_to_csv(**kwargs):
     ti = kwargs["ti"]
     data = ti.xcom_pull(task_ids="fetch_bugs_chart")
-    csv_data = [["rank", "title", "artist",
-                 "lastPos", "peakPos", "image", "genre"]]
+
+    output = io.StringIO()
+    writer = csv.writer(
+        output, quoting=csv.QUOTE_ALL
+    )  # ✅ 모든 필드를 자동으로 따옴표 처리
+
+    # 헤더 추가
+    writer.writerow(["rank", "title", "artist", "lastPos",
+                    "peakPos", "image", "genre"])
+
+    # 데이터 추가
     for entry in data["entries"]:
-        csv_data.append(
+        genres = json.dumps(
+            entry["genres"], ensure_ascii=False
+        )  # 리스트를 문자열로 변환
+        # 이중 따옴표가 포함되면 한번만 보이도록 처리
+        genres = genres.replace('""', '"')  # 이중 따옴표를 하나로 바꿈
+        writer.writerow(
             [
                 entry["rank"],
                 entry["title"],
@@ -64,13 +79,11 @@ def convert_json_to_csv(**kwargs):
                 entry["lastPos"],
                 entry["peakPos"],
                 entry["image"],
-                json.dumps(
-                    entry["genres"], ensure_ascii=False
-                ),  # ✅ 리스트를 문자열로 변환하여 저장
+                genres,
             ]
         )
-    csv_string = "\n".join(",".join(map(str, row)) for row in csv_data)
-    return csv_string
+
+    return output.getvalue()
 
 
 # 3. 로컬에 CSV 저장 (테스트용, 삭제 용이하도록 별도 함수)
@@ -83,7 +96,7 @@ def save_csv_locally(csv_string):
 def upload_to_s3(**kwargs):
     ti = kwargs["ti"]
     csv_string = ti.xcom_pull(task_ids="convert_json_to_csv")
-    # save_csv_locally(csv_string)  # 테스트용 로컬 저장
+    save_csv_locally(csv_string)  # 테스트용 로컬 저장
     s3_hook = S3Hook(aws_conn_id="S4tify_S3")
     s3_hook.load_string(
         csv_string,
@@ -106,7 +119,7 @@ with DAG(
     "bugs_chart_dag",
     default_args=default_args,
     schedule_interval="10 0 * * *",  # 매일 00:10 실행
-    catchup=False,
+    catchup=True,
 ) as dag:
 
     get_spotify_token_task = PythonOperator(
