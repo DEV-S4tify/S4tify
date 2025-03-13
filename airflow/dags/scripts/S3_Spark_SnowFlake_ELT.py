@@ -171,11 +171,11 @@ spark = spark_session_builder("S3_to_Snowflake")
 TODAY = datetime.now().strftime("%Y%m%d")
 S3_BUCKET = "s3a://de5-s4tify"
 chart_sources = {
-    "bugs": f"{S3_BUCKET}/raw_data/bugs_chart/bugs_chart_{TODAY}.csv",
-    "flo": f"{S3_BUCKET}/raw_data/flo_chart/flo_chart_{TODAY}.csv",
-    "genie": f"{S3_BUCKET}/raw_data/genie_chart/genie_chart_{TODAY}.csv",
-    "melon": f"{S3_BUCKET}/raw_data/melon_chart/melon_chart_{TODAY}.csv",
-    "vibe": f"{S3_BUCKET}/raw_data/vibe_chart/vibe_chart_{TODAY}.csv",
+    "bugs": f"{S3_BUCKET}/raw_data/bugs_chart_data/bugs_chart_{TODAY}.csv",
+    "flo": f"{S3_BUCKET}/raw_data/flo_chart_data/flo_chart_{TODAY}.csv",
+    "genie": f"{S3_BUCKET}/raw_data/genie_chart_data/genie_chart_{TODAY}.csv",
+    "melon": f"{S3_BUCKET}/raw_data/melon_chart_data/melon_chart_{TODAY}.csv",
+    "vibe": f"{S3_BUCKET}/raw_data/vibe_chart_data/vibe_chart_{TODAY}.csv",
 }
 
 
