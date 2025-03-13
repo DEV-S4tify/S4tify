@@ -47,8 +47,7 @@ def create_spark_session():
 
 
 def load(): 
-    # Snowflake에 데이터 쓰기
-    
+    # Snowflake 연결
     conn = snowflake.connector.connect(
         user = SNOWFLAKE_USER,
         password = SNOWFLKAE_USER_PWD,
