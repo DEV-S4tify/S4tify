@@ -24,11 +24,8 @@ SNOWFLAKE_OPTIONS = {
     "account": Variable.get("SNOWFLAKE_ACCOUNT"),
     "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
     "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
-    "schema": (
-        Variable.get("SNOWFLAKE_SCHEMA")
-        if Variable.get("SNOWFLAKE_SCHEMA")
-        else "raw_data"
-    ),
+    #"schema": (Variable.get("SNOWFLAKE_SCHEMA")if Variable.get("SNOWFLAKE_SCHEMA")else "raw_data"),
+    "schema" : "RAW_DATA",
     "role": "ACCOUNTADMIN",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
     "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
@@ -70,22 +67,27 @@ def check_and_create_table():
         cur = conn.cursor()
 
         # 테이블 존재 여부 확인
-        cur.execute(f"SHOW TABLES LIKE 'music_charts'")
+        cur.execute(f"""
+            SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = '{SNOWFLAKE_OPTIONS["schema"]}' 
+            AND UPPER(TABLE_NAME) = 'MUSIC_CHARTS'
+        """)
         result = cur.fetchone()
 
         if result is None:
-            # 테이블이 존재하지 않으면 생성
-            create_table_query = """
-            CREATE OR REPLACE TABLE ADHOC.music_charts (
+            # 테이블이 없으면 생성
+            create_table_query = f"""
+            CREATE TABLE IF NOT EXISTS {SNOWFLAKE_OPTIONS['schema']}.music_charts (
                 rank INT,
                 title STRING,
                 artist STRING,
+                genre STRING,  -- 🎵 genre 컬럼 추가
                 lastPos INT,
                 image STRING,
                 peakPos INT,
                 isNew BOOLEAN,
                 source STRING
-            );
+            )
             """
             cur.execute(create_table_query)
             print("✅ music_charts 테이블 생성 완료.")
@@ -123,35 +125,20 @@ def insert_data_into_snowflake(df, table_name):
         )
         cur = conn.cursor()
 
-        # DataFrame을 순회하며 INSERT 쿼리 실행
         for row in df.collect():
-            # None 값을 NULL로 처리하고, 문자열 값은 작은따옴표로 감쌈
-            rank = f"NULL" if row["rank"] is None else row["rank"]
-            title = escape_quotes(
-                f"NULL" if row["title"] is None else f"'{row['title']}'"
-            )
-            artist = escape_quotes(
-                f"NULL" if row["artist"] is None else f"'{row['artist']}'"
-            )
-            lastPos = f"NULL" if row["lastPos"] is None else row["lastPos"]
-            image = escape_quotes(
-                f"NULL" if row["image"] is None else f"'{row['image']}'"
-            )
-            peakPos = f"NULL" if row["peakPos"] is None else row["peakPos"]
-            # isNew 값은 TRUE/FALSE로 처리하고 NULL은 그대로 처리
-            isNew = (
-                f"NULL"
-                if row["isNew"] is None
-                else ("True" if row["isNew"] else "FALSE")
-            )
-            source = escape_quotes(
-                f"NULL" if row["source"] is None else f"'{row['source']}'"
-            )
+            rank = "NULL" if row["rank"] is None else row["rank"]
+            title = escape_quotes(row["title"]) if row["title"] is not None else "NULL"
+            artist = escape_quotes(row["artist"]) if row["artist"] is not None else "NULL"
+            genre = escape_quotes(row["genre"]) if row["genre"] is not None else "NULL"  # 🎵 genre 추가
+            lastPos = "NULL" if row["lastPos"] is None else row["lastPos"]
+            image = escape_quotes(row["image"]) if row["image"] is not None else "NULL"
+            peakPos = "NULL" if row["peakPos"] is None else row["peakPos"]
+            isNew = "NULL" if row["isNew"] is None else ("TRUE" if row["isNew"] else "FALSE")
+            source = escape_quotes(row["source"]) if row["source"] is not None else "NULL"
 
-            # 삽입할 쿼리 (컬럼 이름은 큰따옴표 없이)
             query = f"""
-                INSERT INTO {table_name} (rank, title, artist, lastPos, image, peakPos, isNew, source)
-                VALUES ({rank}, {title}, {artist}, {lastPos}, {image}, {peakPos}, {isNew}, {source})
+                INSERT INTO {table_name} (rank, title, artist, genre, lastPos, image, peakPos, isNew, source)
+                VALUES ({rank}, {title}, {artist}, {genre}, {lastPos}, {image}, {peakPos}, {isNew}, {source})
             """
             cur.execute(query)
 
@@ -159,6 +146,7 @@ def insert_data_into_snowflake(df, table_name):
         cur.close()
         conn.close()
         print("✅ Data inserted into Snowflake successfully.")
+
     except Exception as e:
         print(query)
         print(f"⚠️ Error inserting data into Snowflake: {e}")
@@ -187,11 +175,11 @@ def read_chart_data(source, path):
             .option("inferSchema", True)
             .load(path)
         )
+        df.printSchema()  # ✅ 데이터 스키마 출력해서 `genre` 확인
         return df.withColumn("source", lit(source))
     except Exception as e:
         print(f"⚠️ {source} 데이터 로드 실패: {e}")
         return None
-
 
 # 차트 데이터 읽기 및 병합
 dfs = [read_chart_data(source, path) for source, path in chart_sources.items()]
@@ -206,21 +194,14 @@ if dfs:
         merged_df = merged_df.unionByName(df, allowMissingColumns=True)
 
     final_df = merged_df.select(
-        when(
-            col("rank").rlike("^[0-9]+$"),
-            col("rank").cast("int")).alias("rank"),
+        when(col("rank").rlike("^[0-9]+$"), col("rank").cast("int")).alias("rank"),
         col("title"),
         col("artist"),
-        when(
-            col("lastPos").rlike("^[0-9]+$"),
-            col("lastPos").cast("int")).alias("lastPos"),
+        col("genre"),  # ✅ genre 컬럼 추가
+        when(col("lastPos").rlike("^[0-9]+$"), col("lastPos").cast("int")).alias("lastPos"),
         col("image"),
-        when(
-                col("peakPos").rlike("^[0-9]+$"),
-                col("peakPos").cast("int")).alias("peakPos"),
-        when(
-                    col("isNew").rlike("^(true|false)$"),
-                    col("isNew").cast("boolean")).alias("isNew"),
+        when(col("peakPos").rlike("^[0-9]+$"), col("peakPos").cast("int")).alias("peakPos"),
+        when(col("isNew").rlike("^(true|false)$"), col("isNew").cast("boolean")).alias("isNew"),
         col("source"),
     )
 
