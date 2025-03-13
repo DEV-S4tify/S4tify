@@ -1,11 +1,11 @@
 import os
 import sys
 from datetime import datetime
-from dotenv import load_dotenv
 
-from spark_utils import execute_snowflake_query, spark_session_builder
+from dotenv import load_dotenv
 from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
                                StructType)
+from spark_utils import execute_snowflake_query, spark_session_builder
 
 from airflow.models import Variable
 
