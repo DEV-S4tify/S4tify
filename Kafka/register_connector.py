@@ -1,8 +1,8 @@
 import os
 import sys
 
-from Kafka.utils.connect_utils import create_s3_sink_json
-from Kafka.utils.docker_utils import register_sink_connector
+from utils.connect_utils import create_s3_sink_json
+from utils.docker_utils import register_sink_connector
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, ".."))

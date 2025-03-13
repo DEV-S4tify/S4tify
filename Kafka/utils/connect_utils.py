@@ -1,7 +1,7 @@
 import json
 import os
 
-from Kafka.variables.aws_variables import aws_variables
+from variables.aws_variables import aws_variables
 
 
 def create_s3_sink_json():

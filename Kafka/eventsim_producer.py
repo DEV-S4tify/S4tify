@@ -10,9 +10,9 @@ from kafka.admin import NewTopic
 from kafka.errors import TopicAlreadyExistsError
 from kafka.producer import KafkaProducer
 
-from Kafka.model.music_streaming import EventLog
-from Kafka.utils.docker_utils import get_container_id, is_container_running
-from Kafka.utils.schema_utils import register_schema
+from model.music_streaming import EventLog
+from utils.docker_utils import get_container_id, is_container_running
+from utils.schema_utils import register_schema
 
 # Kafka 패키지가 있는 경로 추가
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
