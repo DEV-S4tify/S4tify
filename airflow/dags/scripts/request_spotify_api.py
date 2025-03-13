@@ -66,10 +66,9 @@ def get_arti_top10(logical_date, **kwargs):
         index=False)
     try:
         load_s3_bucket(object_name)
-        os.remove(f'data/{object_name}')
+        os.remove(f"data/{object_name}")
     except Exception as e:
-        print(f'error: {e}')
-
+        print(f"error: {e}")
 
 
 # 아티스트 정보 가져오기
@@ -111,10 +110,9 @@ def get_artist_info(logical_date, **kwargs):
         index=False)
     try:
         load_s3_bucket(object_name)
-        os.remove(f'data/{object_name}')
+        os.remove(f"data/{object_name}")
     except Exception as e:
-        print(f'error: {e}')
-
+        print(f"error: {e}")
 
 
 # 크롤링 데이터 읽어오는 함수

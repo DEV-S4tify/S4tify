@@ -19,15 +19,14 @@ SPARK_JARS = ",".join(
 )
 
 default_args = {
-    "owner": "airflow",
+    "owner": "sanghyeok_boo",
     "start_date": datetime(2025, 3, 1),
     "end_date": datetime(2025, 3, 7),
-    "retries": 1,
     "template_searchpath": ["/opt/airflow/dags/spark_jobs/"],
 }
 
 dag = DAG(
-    dag_id="spark_s3_to_snowflake_upsert",
+    dag_id="eventsim_ETL",
     default_args=default_args,
     schedule_interval="@daily",
     catchup=True,
@@ -42,19 +41,19 @@ start_task = DummyOperator(task_id="start", dag=dag)
 # SparkSubmitOperator: Spark에서 S3 데이터를 처리하고 Snowflake에 MERGE
 spark_job = SparkSubmitOperator(
     task_id="spark_process_s3_upsert",
-    application="/opt/airflow/dags/scripts/eventsim_ETL.py",
+    application="/opt/airflow/dags/scripts/eventsim_ETL_script.py",
     conn_id="spark_conn",
     application_args=[
         S3_BUCKET,
         "{{ (data_interval_start - macros.timedelta(days=1)).strftime('%Y-%m-%d') }}",
     ],
-    executor_memory="4g",
-    driver_memory="2g",
+    executor_memory="2g",
+    driver_memory="1g",
     jars=SPARK_JARS,
     conf={
         "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
-        "spark.hadoop.fs.s3a.access.key": "{{ conn.aws_conn.login }}",
-        "spark.hadoop.fs.s3a.secret.key": "{{ conn.aws_conn.password }}",
+        "spark.hadoop.fs.s3a.access.key": "{{ conn.aws_s3.login }}",
+        "spark.hadoop.fs.s3a.secret.key": "{{ conn.aws_s3.password }}",
         "spark.hadoop.fs.s3a.endpoint": "s3.ap-northeast-2.amazonaws.com",
         "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
     },

@@ -74,6 +74,7 @@ x-airflow-common:
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW_VAR_DATA_DIR: /opt/airflow/data
+    PYTHONPATH: /opt/airflow/dags:/opt/airflow/dags/plugins:/opt/airflow/dags/scripts:$PYTHONPATH  # Python 모듈 경로 추가
     # JAR 파일 경로 추가
     SPARK_JAR_DIR: /opt/spark/jars
     # yamllint disable rule:line-length
@@ -84,9 +85,9 @@ x-airflow-common:
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     AIRFLOW_CONN_AWS_S3: aws://$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY@$AWS_DEFAULT_REGION
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- selenium pandas numpy webdriver-manager oauth2client gspread snowflake-connector-python pyspark python-dotenv apache-airflow-providers-apache-spark}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- selenium pandas numpy webdriver-manager oauth2client gspread snowflake-connector-python pyspark python-dotenv apache-airflow-providers-apache-spark apache-airflow-providers-snowflake}
     # The following line can be used to set a custom config file, stored in the local config folder
-    # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
+    # If you want to use it, outcommen t it and replace airflow.cfg with the name of your config file
     # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
