@@ -14,7 +14,7 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 # 날짜 설정
-TODAY = datetime.now().strftime("%Y%m%d")
+TODAY = datetime.now().strftime("%Y-%m-%d")
 
 
 S3_BUCKET = "de5-s4tify"
@@ -62,7 +62,7 @@ def convert_json_to_csv(**kwargs):
 
     # 헤더 추가
     writer.writerow(["rank", "title", "artist", "lastPos",
-                    "peakPos", "image", "genre"])
+                    "peakPos", "image", "genre", "date"])
 
     # 데이터 추가
     for entry in data["entries"]:
@@ -80,6 +80,7 @@ def convert_json_to_csv(**kwargs):
                 entry["peakPos"],
                 entry["image"],
                 genres,
+                TODAY,
             ]
         )
 

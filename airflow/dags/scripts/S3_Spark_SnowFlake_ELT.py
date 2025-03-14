@@ -4,6 +4,7 @@ from datetime import datetime
 import snowflake.connector
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count, lit, when
+from pyspark.sql import functions as F
 
 from airflow.models import Variable
 
@@ -24,33 +25,24 @@ SNOWFLAKE_OPTIONS = {
     "account": Variable.get("SNOWFLAKE_ACCOUNT"),
     "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
     "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
-    # "schema": (Variable.get("SNOWFLAKE_SCHEMA")if Variable.get("SNOWFLAKE_SCHEMA")else "raw_data"),
     "schema": "RAW_DATA",
     "role": "ACCOUNTADMIN",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
     "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
-    # "url" : "jdbc:snowflake://kjqeovi-gr23658.snowflakecomputing.com",
 }
-
 
 # Spark Session 생성 함수
 def spark_session_builder(app_name: str) -> SparkSession:
     return (
-        SparkSession.builder.appName(app_name) .config(
-            "spark.jars",
-            SPARK_JARS) .config(
-            "spark.hadoop.fs.s3a.impl",
-            "org.apache.hadoop.fs.s3a.S3AFileSystem") .config(
-                "spark.hadoop.fs.s3a.access.key",
-                Variable.get("AWS_ACCESS_KEY")) .config(
-                    "spark.hadoop.fs.s3a.secret.key",
-                    Variable.get("AWS_SECRET_KEY")) .config(
-                        "spark.hadoop.fs.s3a.endpoint",
-                        "s3.amazonaws.com") .config(
-                            "spark.hadoop.fs.s3a.aws.credentials.provider",
-                            "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
-        ) .getOrCreate())
-
+        SparkSession.builder.appName(app_name)
+        .config("spark.jars", SPARK_JARS)
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+        .config("spark.hadoop.fs.s3a.access.key", Variable.get("AWS_ACCESS_KEY"))
+        .config("spark.hadoop.fs.s3a.secret.key", Variable.get("AWS_SECRET_KEY"))
+        .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
+        .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+        .getOrCreate()
+    )
 
 # Snowflake에서 SQL 실행 함수
 def check_and_create_table():
@@ -88,7 +80,8 @@ def check_and_create_table():
                 image STRING,
                 peakPos INT,
                 isNew BOOLEAN,
-                source STRING
+                source STRING,
+                date DATE -- 날짜 컬럼 추가
             )
             """
             cur.execute(create_table_query)
@@ -110,6 +103,16 @@ def escape_quotes(value):
         return "NULL"
     return "'{}'".format(value.replace("'", "''"))
 
+# `genre` 컬럼에서 추가 따옴표를 처리하는 함수
+def clean_genre(value):
+    if value:
+        # 장르 목록을 '[]' 또는 다른 구분자로 구분하고, 구분자 처리
+        cleaned_value = value.replace('""', '"')  # 따옴표 문제 해결
+        cleaned_value = cleaned_value.replace('"[', '[').replace(']"', ']')
+        # 구분자가 있는 경우 이를 처리
+        cleaned_value = cleaned_value.replace('|', ', ')  # 구분자 변경(예: '|' -> ', ')
+        return cleaned_value
+    return value
 
 # Snowflake에서 SQL 실행 함수
 def insert_data_into_snowflake(df, table_name):
@@ -127,30 +130,19 @@ def insert_data_into_snowflake(df, table_name):
 
         for row in df.collect():
             rank = "NULL" if row["rank"] is None else row["rank"]
-            title = escape_quotes(
-                row["title"]) if row["title"] is not None else "NULL"
-            artist = (
-                escape_quotes(
-                    row["artist"]) if row["artist"] is not None else "NULL")
-            genre = (
-                escape_quotes(
-                    row["genre"]) if row["genre"] is not None else "NULL")  # 🎵 genre 추가
+            title = escape_quotes(row["title"]) if row["title"] is not None else "NULL"
+            artist = escape_quotes(row["artist"]) if row["artist"] is not None else "NULL"
+            genre = escape_quotes(clean_genre(row["genre"])) if row["genre"] is not None else "NULL"  # 🎵 genre 처리
             lastPos = "NULL" if row["lastPos"] is None else row["lastPos"]
-            image = escape_quotes(
-                row["image"]) if row["image"] is not None else "NULL"
+            image = escape_quotes(row["image"]) if row["image"] is not None else "NULL"
             peakPos = "NULL" if row["peakPos"] is None else row["peakPos"]
-            isNew = (
-                "NULL"
-                if row["isNew"] is None
-                else ("TRUE" if row["isNew"] else "FALSE")
-            )
-            source = (
-                escape_quotes(
-                    row["source"]) if row["source"] is not None else "NULL")
+            isNew = "NULL" if row["isNew"] is None else ("TRUE" if row["isNew"] else "FALSE")
+            source = escape_quotes(row["source"]) if row["source"] is not None else "NULL"
+            date = f"'{row['date']}'"  # date 컬럼 처리
 
             query = f"""
-                INSERT INTO {table_name} (rank, title, artist, genre, lastPos, image, peakPos, isNew, source)
-                VALUES ({rank}, {title}, {artist}, {genre}, {lastPos}, {image}, {peakPos}, {isNew}, {source})
+                INSERT INTO {table_name} (rank, title, artist, genre, lastPos, image, peakPos, isNew, source, date)
+                VALUES ({rank}, {title}, {artist}, {genre}, {lastPos}, {image}, {peakPos}, {isNew}, {source}, {date})
             """
             cur.execute(query)
 
@@ -160,7 +152,6 @@ def insert_data_into_snowflake(df, table_name):
         print("✅ Data inserted into Snowflake successfully.")
 
     except Exception as e:
-        print(query)
         print(f"⚠️ Error inserting data into Snowflake: {e}")
 
 
@@ -178,7 +169,6 @@ chart_sources = {
     "vibe": f"{S3_BUCKET}/raw_data/vibe_chart_data/vibe_chart_{TODAY}.csv",
 }
 
-
 def read_chart_data(source, path):
     try:
         df = (
@@ -187,7 +177,7 @@ def read_chart_data(source, path):
             .option("inferSchema", True)
             .load(path)
         )
-        df.printSchema()  # ✅ 데이터 스키마 출력해서 `genre` 확인
+        df.printSchema()  # 데이터 스키마 출력해서 `genre`와 `date` 확인
         return df.withColumn("source", lit(source))
     except Exception as e:
         print(f"⚠️ {source} 데이터 로드 실패: {e}")
@@ -211,7 +201,7 @@ if dfs:
              col("rank").cast("int")).alias("rank"),
         col("title"),
         col("artist"),
-        col("genre"),  # ✅ genre 컬럼 추가
+        col("genre"),  # genre 컬럼 추가
         when(col("lastPos").rlike("^[0-9]+$"), col("lastPos").cast("int")).alias(
             "lastPos"
         ),
@@ -223,18 +213,25 @@ if dfs:
             "isNew"
         ),
         col("source"),
+        col("date"),  # date 컬럼 추가
     )
 
-    final_df.show(40)
+    # 최종 데이터 프레임에서 genre 컬럼 정리
+    final_df_cleaned = final_df.withColumn(
+        "genre", F.when(F.col("genre").isNotNull(), clean_genre(F.col("genre"))).otherwise(F.lit(None))
+    )
+    final_df = final_df.withColumnRenamed("date_time", "date")
+
+    final_df_cleaned.show(40)
 
     # 데이터 확인
-    final_df.groupBy("source").agg(count("*").alias("count")).show()
+    final_df_cleaned.groupBy("source").agg(count("*").alias("count")).show()
 
     # Snowflake에서 테이블 존재 여부 확인 및 생성
     check_and_create_table()
 
     # Snowflake에 데이터 적재
-    insert_data_into_snowflake(final_df, "music_charts")
+    insert_data_into_snowflake(final_df_cleaned, "music_charts")
 
 else:
     print("❌ 저장할 차트 데이터가 없습니다.")
