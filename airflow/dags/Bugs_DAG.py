@@ -42,7 +42,7 @@ def fetch_bugs_chart():
                 "title": entry.title,
                 "artist": entry.artist,
                 "lastPos": entry.lastPos,
-                "peakPos": entry.peakPos,
+                "peakPos": entry.peakPos, 
                 "image": entry.image,
                 "genres": genre.split(", ") if genre else [],  # ✅ 리스트 변환,
             }
@@ -50,7 +50,7 @@ def fetch_bugs_chart():
     return chart_data
 
 
-# 2. JSON → CSV 변환
+# 2. JSON → CSV 변환 (genre를 리스트로 저장)
 def convert_json_to_csv(**kwargs):
     ti = kwargs["ti"]
     data = ti.xcom_pull(task_ids="fetch_bugs_chart")
@@ -66,11 +66,10 @@ def convert_json_to_csv(**kwargs):
 
     # 데이터 추가
     for entry in data["entries"]:
-        genres = json.dumps(
-            entry["genres"], ensure_ascii=False
-        )  # 리스트를 문자열로 변환
-        # 이중 따옴표가 포함되면 한번만 보이도록 처리
-        genres = genres.replace('""', '"')  # 이중 따옴표를 하나로 바꿈
+        # 리스트 그대로 저장
+        genres = entry["genres"]
+
+        # CSV에 추가
         writer.writerow(
             [
                 entry["rank"],
@@ -79,7 +78,7 @@ def convert_json_to_csv(**kwargs):
                 entry["lastPos"],
                 entry["peakPos"],
                 entry["image"],
-                genres,
+                genres,  # 수정된 부분: 리스트 그대로 저장
                 TODAY,
             ]
         )

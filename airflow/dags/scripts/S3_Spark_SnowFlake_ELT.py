@@ -4,7 +4,6 @@ from datetime import datetime
 import snowflake.connector
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count, lit, when
-from pyspark.sql import functions as F
 
 from airflow.models import Variable
 
@@ -103,16 +102,6 @@ def escape_quotes(value):
         return "NULL"
     return "'{}'".format(value.replace("'", "''"))
 
-# `genre` 컬럼에서 추가 따옴표를 처리하는 함수
-def clean_genre(value):
-    if value:
-        # 장르 목록을 '[]' 또는 다른 구분자로 구분하고, 구분자 처리
-        cleaned_value = value.replace('""', '"')  # 따옴표 문제 해결
-        cleaned_value = cleaned_value.replace('"[', '[').replace(']"', ']')
-        # 구분자가 있는 경우 이를 처리
-        cleaned_value = cleaned_value.replace('|', ', ')  # 구분자 변경(예: '|' -> ', ')
-        return cleaned_value
-    return value
 
 # Snowflake에서 SQL 실행 함수
 def insert_data_into_snowflake(df, table_name):
@@ -132,13 +121,13 @@ def insert_data_into_snowflake(df, table_name):
             rank = "NULL" if row["rank"] is None else row["rank"]
             title = escape_quotes(row["title"]) if row["title"] is not None else "NULL"
             artist = escape_quotes(row["artist"]) if row["artist"] is not None else "NULL"
-            genre = escape_quotes(clean_genre(row["genre"])) if row["genre"] is not None else "NULL"  # 🎵 genre 처리
+            genre = escape_quotes(row["genre"]) if row["genre"] is not None else "NULL"  # 🎵 genre 추가
             lastPos = "NULL" if row["lastPos"] is None else row["lastPos"]
             image = escape_quotes(row["image"]) if row["image"] is not None else "NULL"
             peakPos = "NULL" if row["peakPos"] is None else row["peakPos"]
             isNew = "NULL" if row["isNew"] is None else ("TRUE" if row["isNew"] else "FALSE")
             source = escape_quotes(row["source"]) if row["source"] is not None else "NULL"
-            date = f"'{row['date']}'"  # date 컬럼 처리
+            date = f"'{row['date']}'"  # date 컬럼 추가
 
             query = f"""
                 INSERT INTO {table_name} (rank, title, artist, genre, lastPos, image, peakPos, isNew, source, date)
@@ -152,6 +141,7 @@ def insert_data_into_snowflake(df, table_name):
         print("✅ Data inserted into Snowflake successfully.")
 
     except Exception as e:
+        print(query)
         print(f"⚠️ Error inserting data into Snowflake: {e}")
 
 
@@ -159,7 +149,7 @@ def insert_data_into_snowflake(df, table_name):
 spark = spark_session_builder("S3_to_Snowflake")
 
 # 오늘 날짜 기반 S3 데이터 경로 생성
-TODAY = datetime.now().strftime("%Y%m%d")
+TODAY = datetime.now().strftime("%Y-%m-%d")
 S3_BUCKET = "s3a://de5-s4tify"
 chart_sources = {
     "bugs": f"{S3_BUCKET}/raw_data/bugs_chart_data/bugs_chart_{TODAY}.csv",
@@ -216,22 +206,16 @@ if dfs:
         col("date"),  # date 컬럼 추가
     )
 
-    # 최종 데이터 프레임에서 genre 컬럼 정리
-    final_df_cleaned = final_df.withColumn(
-        "genre", F.when(F.col("genre").isNotNull(), clean_genre(F.col("genre"))).otherwise(F.lit(None))
-    )
-    final_df = final_df.withColumnRenamed("date_time", "date")
-
-    final_df_cleaned.show(40)
+    final_df.show(40)
 
     # 데이터 확인
-    final_df_cleaned.groupBy("source").agg(count("*").alias("count")).show()
+    final_df.groupBy("source").agg(count("*").alias("count")).show()
 
     # Snowflake에서 테이블 존재 여부 확인 및 생성
     check_and_create_table()
 
     # Snowflake에 데이터 적재
-    insert_data_into_snowflake(final_df_cleaned, "music_charts")
+    insert_data_into_snowflake(final_df, "music_charts")
 
 else:
     print("❌ 저장할 차트 데이터가 없습니다.")

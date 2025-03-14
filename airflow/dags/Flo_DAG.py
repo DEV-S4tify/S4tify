@@ -59,16 +59,14 @@ def convert_json_to_csv(**kwargs):
     )  # ✅ 모든 필드를 자동으로 따옴표 처리
 
     # 헤더 추가
-    writer.writerow(["rank", "title", "artist",
-                    "lastPos", "isNew", "image", "genre", "date"])
+    writer.writerow(["rank", "title", "artist", "lastPos", "isNew", "image", "genre", "date"])
 
     # 데이터 추가
     for entry in data["entries"]:
-        genres = json.dumps(
-            entry["genres"], ensure_ascii=False
-        )  # 리스트를 문자열로 변환
-        # 이중 따옴표가 포함되면 한번만 보이도록 처리
-        genres = genres.replace('""', '"')  # 이중 따옴표를 하나로 바꿈
+        # 리스트 그대로 저장 (genres는 리스트로 저장)
+        genres = entry["genres"]  # 수정된 부분: 리스트 그대로 저장
+
+        # CSV에 추가
         writer.writerow(
             [
                 entry["rank"],
@@ -77,12 +75,13 @@ def convert_json_to_csv(**kwargs):
                 entry["lastPos"],
                 entry["isNew"],
                 entry["image"],
-                genres,
+                genres,  # 수정된 부분: 리스트 그대로 저장
                 TODAY,
             ]
         )
 
     return output.getvalue()
+
 
 
 # 3. 로컬에 CSV 저장 (테스트용, 삭제 용이하도록 별도 함수)
