@@ -58,7 +58,8 @@ def convert_json_to_csv(**kwargs):
     )  # ✅ 모든 필드를 자동으로 따옴표 처리
 
     # 헤더 추가
-    writer.writerow(["rank", "title", "artist", "lastPos", "isNew", "image", "genre", "date"])
+    writer.writerow(["rank", "title", "artist", "lastPos",
+                     "isNew", "image", "genre", "date"])
 
     # 데이터 추가
     for entry in data["entries"]:

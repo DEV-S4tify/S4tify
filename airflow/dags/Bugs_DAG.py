@@ -42,7 +42,7 @@ def fetch_bugs_chart():
                 "title": entry.title,
                 "artist": entry.artist,
                 "lastPos": entry.lastPos,
-                "peakPos": entry.peakPos, 
+                "peakPos": entry.peakPos,
                 "image": entry.image,
                 "genres": genre.split(", ") if genre else [],  # ✅ 리스트 변환,
             }
@@ -62,7 +62,7 @@ def convert_json_to_csv(**kwargs):
 
     # 헤더 추가
     writer.writerow(["rank", "title", "artist", "lastPos",
-                    "peakPos", "image", "genre", "date"])
+                     "peakPos", "image", "genre", "date"])
 
     # 데이터 추가
     for entry in data["entries"]:

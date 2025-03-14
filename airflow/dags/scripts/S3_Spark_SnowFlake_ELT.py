@@ -30,18 +30,25 @@ SNOWFLAKE_OPTIONS = {
     "url": f'jdbc:snowflake://{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
 
+
 # Spark Session 생성 함수
 def spark_session_builder(app_name: str) -> SparkSession:
     return (
-        SparkSession.builder.appName(app_name)
-        .config("spark.jars", SPARK_JARS)
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY"))
-        .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_KEY"))
-        .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
-        .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-        .getOrCreate()
-    )
+        SparkSession.builder.appName(app_name) .config(
+            "spark.jars",
+            SPARK_JARS) .config(
+            "spark.hadoop.fs.s3a.impl",
+            "org.apache.hadoop.fs.s3a.S3AFileSystem") .config(
+                "spark.hadoop.fs.s3a.access.key",
+                os.getenv("AWS_ACCESS_KEY")) .config(
+                    "spark.hadoop.fs.s3a.secret.key",
+                    os.getenv("AWS_SECRET_KEY")) .config(
+                        "spark.hadoop.fs.s3a.endpoint",
+                        "s3.amazonaws.com") .config(
+                            "spark.hadoop.fs.s3a.aws.credentials.provider",
+                            "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
+        ) .getOrCreate())
+
 
 # Snowflake에서 SQL 실행 함수
 def check_and_create_table():
@@ -119,14 +126,26 @@ def insert_data_into_snowflake(df, table_name):
 
         for row in df.collect():
             rank = "NULL" if row["rank"] is None else row["rank"]
-            title = escape_quotes(row["title"]) if row["title"] is not None else "NULL"
-            artist = escape_quotes(row["artist"]) if row["artist"] is not None else "NULL"
-            genre = escape_quotes(row["genre"]) if row["genre"] is not None else "NULL"  # 🎵 genre 추가
+            title = escape_quotes(
+                row["title"]) if row["title"] is not None else "NULL"
+            artist = (
+                escape_quotes(
+                    row["artist"]) if row["artist"] is not None else "NULL")
+            genre = (
+                escape_quotes(
+                    row["genre"]) if row["genre"] is not None else "NULL")  # 🎵 genre 추가
             lastPos = "NULL" if row["lastPos"] is None else row["lastPos"]
-            image = escape_quotes(row["image"]) if row["image"] is not None else "NULL"
+            image = escape_quotes(
+                row["image"]) if row["image"] is not None else "NULL"
             peakPos = "NULL" if row["peakPos"] is None else row["peakPos"]
-            isNew = "NULL" if row["isNew"] is None else ("TRUE" if row["isNew"] else "FALSE")
-            source = escape_quotes(row["source"]) if row["source"] is not None else "NULL"
+            isNew = (
+                "NULL"
+                if row["isNew"] is None
+                else ("TRUE" if row["isNew"] else "FALSE")
+            )
+            source = (
+                escape_quotes(
+                    row["source"]) if row["source"] is not None else "NULL")
             date = f"'{row['date']}'"  # date 컬럼 추가
 
             query = f"""
@@ -158,6 +177,7 @@ chart_sources = {
     "melon": f"{S3_BUCKET}/raw_data/melon_chart_data/melon_chart_{TODAY}.csv",
     "vibe": f"{S3_BUCKET}/raw_data/vibe_chart_data/vibe_chart_{TODAY}.csv",
 }
+
 
 def read_chart_data(source, path):
     try:
