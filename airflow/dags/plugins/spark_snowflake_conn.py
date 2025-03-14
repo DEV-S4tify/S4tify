@@ -8,8 +8,8 @@ SNOWFLAKE_USER =  Variable.get("SNOWFLAKE_USER")
 SNOWFLKAE_USER_PWD =  Variable.get("SNOWFLAKE_PASSWORD")
 SNOWFLAKE_ACCOUNT = Variable.get("SNOWFLAKE_ACCOUNT")
 SNOWFLAKE_URL =  Variable.get("SNOWFLAKE_URL")
-SNOWFLAKE_DB = 'test'
-SNOWFLAKE_SCHEMA = 'test_schema'
+SNOWFLAKE_DB = 'S4TIFY'
+SNOWFLAKE_SCHEMA = 'RAW_DATA'
 
 AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
@@ -22,7 +22,7 @@ snowflake_options = {
     "sfDatabase": SNOWFLAKE_DB,
     "sfSchema": SNOWFLAKE_SCHEMA,
     "sfWarehouse": "COMPUTE_WH",
-    "sfRole": "ACCOUNTADMIN",
+    "sfRole": "ANALYTICS_USERS",
     "sfUser": SNOWFLAKE_USER,
     "sfPassword": SNOWFLKAE_USER_PWD 
 }

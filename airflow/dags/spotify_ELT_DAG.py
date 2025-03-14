@@ -23,7 +23,7 @@ with DAG(
 ) as dag:
     
     artist_info_Top10_table = SparkSubmitOperator(
-        task_id = 'artist_info_globalTop50_table',
+        task_id = 'artist_info_top10_table',
         application='dags/scripts/ELT_artist_info_top10.py',
         conn_id='spark_default',
         dag=dag
