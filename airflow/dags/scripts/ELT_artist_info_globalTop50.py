@@ -18,7 +18,7 @@ OBJECT_NAME = 'raw_data'
 TODAY = datetime.now().strftime("%Y-%m-%d")
 def load(): 
     
-    #Å×ÀÌºí ÀÖ´ÂÁö È®ÀÎÇÏ´Â sql
+    #í…Œì´ë¸” ìˆëŠ”ì§€ í™•ì¸í•˜ëŠ” sql
     sql = """
         CREATE TABLE IF NOT EXISTS artist_info_globalTop50(
             artist_id VARCHAR(100),
@@ -36,7 +36,7 @@ def load():
     transform_df = transformation()
     transform_df.show()
     
-    # Null °ªÀÌ ÀÖ´Â Çà Ãâ·Â
+    # Null ê°’ì´ ìˆëŠ” í–‰ ì¶œë ¥
     #transform_df.filter(col("title") == "Sweet Dreams (feat. Miguel)").show(truncate=False)
 
     write_snowflake_spark_dataframe('artist_info_globalTop50', transform_df)
@@ -57,7 +57,7 @@ def transformation():
         StructField("artist_id", StringType(), True)
     ])
     
-    #µ¥ÀÌÅÍ ÀĞ°í Áßº¹ Á¦°Å
+    #ë°ì´í„° ì½ê³  ì¤‘ë³µ ì œê±°
     artist_info_df = extract("spotify_artist_info", artist_info_schema).dropDuplicates(['artist_id'])
     global_top50_df = extract("spotify_crawling_data", global_top50_schema)
     
@@ -84,8 +84,8 @@ def extract(file_name, schema):
                 .withColumn("artist", when(col("artist").isNull(), lit([""])).otherwise(col("artist")))  
             )
     if file_name == 'spotify_artist_info':
-        df = df.withColumn("artist_genre", regexp_replace(df["artist_genre"], "[\\[\\]']", ""))  # ºÒÇÊ¿äÇÑ ¹®ÀÚ Á¦°Å
-        df = df.withColumn("artist_genre", split(df["artist_genre"], ", "))  # ½°Ç¥ ±âÁØÀ¸·Î ¹è¿­ º¯È¯
+        df = df.withColumn("artist_genre", regexp_replace(df["artist_genre"], "[\\[\\]']", ""))  # ë¶ˆí•„ìš”í•œ ë¬¸ì ì œê±°
+        df = df.withColumn("artist_genre", split(df["artist_genre"], ", "))  # ì‰¼í‘œ ê¸°ì¤€ìœ¼ë¡œ ë°°ì—´ ë³€í™˜
         df = df.withColumnRenamed("artist", "artist_name")
     
     return df

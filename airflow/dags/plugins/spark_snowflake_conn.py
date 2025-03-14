@@ -28,7 +28,7 @@ snowflake_options = {
 }
 
 def create_spark_session(app_name: str):
-    #¸¸¾à Á¤ÀÇµÈ connectionÀÌ cluster¶ó¸é master¸¦ spark master ÁÖ¼Ò·Î º¯°æ
+    #ë§Œì•½ ì •ì˜ëœ connectionì´ clusterë¼ë©´ masterë¥¼ spark master ì£¼ì†Œë¡œ ë³€ê²½
     spark = SparkSession.builder \
         .appName(f"{app_name}") \
         .master("local[*]") \
