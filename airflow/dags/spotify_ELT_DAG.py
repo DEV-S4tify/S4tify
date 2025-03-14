@@ -6,7 +6,7 @@ from scripts.crawling_spotify_data import *
 from scripts.request_spotify_api import *
 from scripts.load_spotify_data import *
 
-#DAG ±âº» ¼³Á¤
+#DAG ê¸°ë³¸ ì„¤ì •
 default_args = {
     'owner': 'yerin',
     'depends_on_past': False,
