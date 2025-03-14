@@ -19,17 +19,15 @@ SPARK_JARS = ",".join(
 
 # Snowflake 연결 정보 설정
 SNOWFLAKE_OPTIONS = {
-    "user": Variable.get("SNOWFLAKE_USER"),
-    "password": Variable.get("SNOWFLAKE_PASSWORD"),
-    "account": Variable.get("SNOWFLAKE_ACCOUNT"),
-    "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
-    "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
-    # "schema": (Variable.get("SNOWFLAKE_SCHEMA")if Variable.get("SNOWFLAKE_SCHEMA")else "raw_data"),
+    "user": os.getenv("SNOWFLAKE_USER"),
+    "password": os.getenv("SNOWFLAKE_PASSWORD"),
+    "account": os.getenv("SNOWFLAKE_ACCOUNT"),
+    "db": os.getenv("SNOWFLAKE_DB", "S4TIFY"),
+    "warehouse": os.getenv("SNOWFLAKE_WH", "COMPUTE_WH"),
     "schema": "RAW_DATA",
     "role": "ACCOUNTADMIN",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
-    "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
-    # "url" : "jdbc:snowflake://kjqeovi-gr23658.snowflakecomputing.com",
+    "url": f'jdbc:snowflake://{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
 
 
@@ -42,9 +40,9 @@ def spark_session_builder(app_name: str) -> SparkSession:
             "spark.hadoop.fs.s3a.impl",
             "org.apache.hadoop.fs.s3a.S3AFileSystem") .config(
                 "spark.hadoop.fs.s3a.access.key",
-                Variable.get("AWS_ACCESS_KEY")) .config(
+                os.getenv("AWS_ACCESS_KEY")) .config(
                     "spark.hadoop.fs.s3a.secret.key",
-                    Variable.get("AWS_SECRET_KEY")) .config(
+                    os.getenv("AWS_SECRET_KEY")) .config(
                         "spark.hadoop.fs.s3a.endpoint",
                         "s3.amazonaws.com") .config(
                             "spark.hadoop.fs.s3a.aws.credentials.provider",
@@ -88,7 +86,8 @@ def check_and_create_table():
                 image STRING,
                 peakPos INT,
                 isNew BOOLEAN,
-                source STRING
+                source STRING,
+                date DATE -- 날짜 컬럼 추가
             )
             """
             cur.execute(create_table_query)
@@ -147,10 +146,11 @@ def insert_data_into_snowflake(df, table_name):
             source = (
                 escape_quotes(
                     row["source"]) if row["source"] is not None else "NULL")
+            date = f"'{row['date']}'"  # date 컬럼 추가
 
             query = f"""
-                INSERT INTO {table_name} (rank, title, artist, genre, lastPos, image, peakPos, isNew, source)
-                VALUES ({rank}, {title}, {artist}, {genre}, {lastPos}, {image}, {peakPos}, {isNew}, {source})
+                INSERT INTO {table_name} (rank, title, artist, genre, lastPos, image, peakPos, isNew, source, date)
+                VALUES ({rank}, {title}, {artist}, {genre}, {lastPos}, {image}, {peakPos}, {isNew}, {source}, {date})
             """
             cur.execute(query)
 
@@ -168,7 +168,7 @@ def insert_data_into_snowflake(df, table_name):
 spark = spark_session_builder("S3_to_Snowflake")
 
 # 오늘 날짜 기반 S3 데이터 경로 생성
-TODAY = datetime.now().strftime("%Y%m%d")
+TODAY = datetime.now().strftime("%Y-%m-%d")
 S3_BUCKET = "s3a://de5-s4tify"
 chart_sources = {
     "bugs": f"{S3_BUCKET}/raw_data/bugs_chart_data/bugs_chart_{TODAY}.csv",
@@ -187,7 +187,7 @@ def read_chart_data(source, path):
             .option("inferSchema", True)
             .load(path)
         )
-        df.printSchema()  # ✅ 데이터 스키마 출력해서 `genre` 확인
+        df.printSchema()  # 데이터 스키마 출력해서 `genre`와 `date` 확인
         return df.withColumn("source", lit(source))
     except Exception as e:
         print(f"⚠️ {source} 데이터 로드 실패: {e}")
@@ -211,7 +211,7 @@ if dfs:
              col("rank").cast("int")).alias("rank"),
         col("title"),
         col("artist"),
-        col("genre"),  # ✅ genre 컬럼 추가
+        col("genre"),  # genre 컬럼 추가
         when(col("lastPos").rlike("^[0-9]+$"), col("lastPos").cast("int")).alias(
             "lastPos"
         ),
@@ -223,6 +223,7 @@ if dfs:
             "isNew"
         ),
         col("source"),
+        col("date"),  # date 컬럼 추가
     )
 
     final_df.show(40)
