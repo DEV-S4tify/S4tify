@@ -6,9 +6,9 @@ from airflow.models import Variable
 from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
 
-# Airflow Variables에서 AWS 자격 증명 불러오기 (없으면 예외 발생 방지)
-AWS_ACCESS_KEY = Variable.get("AWS_ACCESS_KEY", default_var=None)
-AWS_SECRET_KEY = Variable.get("AWS_SECRET_KEY", default_var=None)
+# .env에서 AWS 자격 증명 불러오기 (없으면 예외 발생 방지)
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY", default_var=None)
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY", default_var=None)
 
 if not AWS_ACCESS_KEY or not AWS_SECRET_KEY:
     raise ValueError("AWS_ACCESS_KEY 또는 AWS_SECRET_KEY가 설정되지 않았습니다.")

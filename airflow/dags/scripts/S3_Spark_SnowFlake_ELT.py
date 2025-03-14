@@ -19,15 +19,15 @@ SPARK_JARS = ",".join(
 
 # Snowflake 연결 정보 설정
 SNOWFLAKE_OPTIONS = {
-    "user": Variable.get("SNOWFLAKE_USER"),
-    "password": Variable.get("SNOWFLAKE_PASSWORD"),
-    "account": Variable.get("SNOWFLAKE_ACCOUNT"),
-    "db": Variable.get("SNOWFLAKE_DB", "S4TIFY"),
-    "warehouse": Variable.get("SNOWFLAKE_WH", "COMPUTE_WH"),
+    "user": os.getenv("SNOWFLAKE_USER"),
+    "password": os.getenv("SNOWFLAKE_PASSWORD"),
+    "account": os.getenv("SNOWFLAKE_ACCOUNT"),
+    "db": os.getenv("SNOWFLAKE_DB", "S4TIFY"),
+    "warehouse": os.getenv("SNOWFLAKE_WH", "COMPUTE_WH"),
     "schema": "RAW_DATA",
     "role": "ACCOUNTADMIN",
     "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
-    "url": f'jdbc:snowflake://{Variable.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
+    "url": f'jdbc:snowflake://{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
 
 # Spark Session 생성 함수
@@ -36,8 +36,8 @@ def spark_session_builder(app_name: str) -> SparkSession:
         SparkSession.builder.appName(app_name)
         .config("spark.jars", SPARK_JARS)
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.hadoop.fs.s3a.access.key", Variable.get("AWS_ACCESS_KEY"))
-        .config("spark.hadoop.fs.s3a.secret.key", Variable.get("AWS_SECRET_KEY"))
+        .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY"))
+        .config("spark.hadoop.fs.s3a.secret.key", os.getenv("AWS_SECRET_KEY"))
         .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
         .getOrCreate()
