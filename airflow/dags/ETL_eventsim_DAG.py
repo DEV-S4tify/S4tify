@@ -13,7 +13,7 @@ S3_BUCKET = "s3a://de5-s4tify"
 default_args = {
     "owner": "sanghyeok_boo",
     "start_date": datetime(2025, 3, 1),
-    "end_date": datetime(2025, 3, 7),
+    "end_date": datetime(2025, 3, 2),
     "template_searchpath": ["/opt/airflow/dags/spark_jobs/"],
 }
 
