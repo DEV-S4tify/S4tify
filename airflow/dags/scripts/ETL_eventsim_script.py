@@ -5,7 +5,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
                                StructType)
-from spark_utils import execute_snowflake_query, spark_session_builder, escape_quotes
+from spark_utils import (escape_quotes, execute_snowflake_query,
+                         spark_session_builder)
 
 load_dotenv()
 
@@ -40,9 +41,17 @@ df = spark.read.json(
     f"{S3_BUCKET}/topics/eventsim_music_streaming/year={year}/month={month}/day={day}/*.json"
 )
 
-df_clean = df.select("song", "artist", "location", "sessionId", "userId", "ts") \
-             .filter((df.song.isNotNull()) & (df.artist.isNotNull()) & (df.page != "Home"))\
-             .fillna("NULL")
+df_clean = (
+    df.select(
+        "song",
+        "artist",
+        "location",
+        "sessionId",
+        "userId",
+        "ts") .filter(
+            (df.song.isNotNull()) & (
+                df.artist.isNotNull()) & (
+                    df.page != "Home")) .fillna("NULL"))
 # df_clean = df.wehre("song IS NOT NULL AND artist IS NOT NULL")
 
 print(df_clean.show(5))
@@ -87,11 +96,9 @@ print("TEMP 테이블 확인 완료")
 #     """
 
 #     execute_snowflake_query(insert_temp_table_sql, SNOWFLAKE_PROPERTIES, data=row)
-df_clean.write\
-    .format("jdbc")\
-    .options(**SNOWFLAKE_PROPERTIES)\
-    .option("dbtable", f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE}")\
-    .mode("overwrite").save()
+df_clean.write.format("jdbc").options(**SNOWFLAKE_PROPERTIES).option(
+    "dbtable", f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE}"
+).mode("overwrite").save()
 print("TEMP 테이블 적재 완료")
 
 # Snowflake에서 MERGE 수행

@@ -1,19 +1,21 @@
 import os
 from datetime import timedelta
+
+import pandas as pd
+import snowflake.connector
 from dotenv import load_dotenv
+from spark_utils import execute_snowflake_query
+
 from airflow import DAG
+from airflow.exceptions import AirflowFailException
 from airflow.operators.python import PythonOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.utils.dates import days_ago
-from airflow.exceptions import AirflowFailException
-import snowflake.connector
-import pandas as pd
-from spark_utils import execute_snowflake_query
 
 load_dotenv()
 
 # SNOWFLAKE 설정
-SNOWFLAKE_SOURCE_TABLE = 'EVENTSIM_LOG'
+SNOWFLAKE_SOURCE_TABLE = "EVENTSIM_LOG"
 SNOWFLAKE_SOURCE_SCHEMA = os.environ.get("SNOWFLAKE_SILVER_SCHMEA", "RAW_DATA")
 SNOWFLAKE_TARGET_SONG_TABLE = "EVENTSIM_SONG_COUNTS"
 SNOWFLAKE_TARGET_ARTIST_TABLE = "EVENTSIM_ARTIST_COUNTS"
@@ -28,11 +30,12 @@ SNOWFLAKE_PROPERTIES = {
     "role": os.environ.get("SNOWFLAKE_ROLE", "ANALYTICS_USERS"),
 }
 
+
 def extract_data_from_snowflake():
     """
     Snowflake에서 데이터를 읽어오는 함수
     """
-    SNOWFLAKE_PROPERTIES['schema'] = SNOWFLAKE_SOURCE_SCHEMA
+    SNOWFLAKE_PROPERTIES["schema"] = SNOWFLAKE_SOURCE_SCHEMA
 
     query = f"""
         SELECT SONG, ARTIST, LOCATION, SESSIONID, USERID, TS
@@ -56,28 +59,33 @@ def extract_data_from_snowflake():
         print(df.head(5))
         print("Data successfully extracted from Snowflake!")
         return df
-    
+
     except Exception as e:
         print(f"Error extracting data from Snowflake: {e}")
         return None
-    
+
     finally:
         cur.close()
         conn.close()
 
+
 def process_song_counts(**kwargs):
-    SNOWFLAKE_PROPERTIES['schema'] = SNOWFLAKE_TARGET_SCHEMA
-    ti = kwargs['ti']
-    df = ti.xcom_pull(task_ids='extract_data')
+    SNOWFLAKE_PROPERTIES["schema"] = SNOWFLAKE_TARGET_SCHEMA
+    ti = kwargs["ti"]
+    df = ti.xcom_pull(task_ids="extract_data")
 
     if df is None or df.empty:
-        raise AirflowFailException("No data available for processing song counts.")
-    
+        raise AirflowFailException(
+            "No data available for processing song counts.")
+
     # 노래 카운트 계산
-    song_counts = df.groupby(["SONG", "ARTIST"]).size().reset_index(name="song_count")
-    
+    song_counts = df.groupby(
+        ["SONG", "ARTIST"]).size().reset_index(name="song_count")
+
     # 테이블 비우기
-    execute_snowflake_query(f"TRUNCATE TABLE {SNOWFLAKE_TARGET_SONG_TABLE};", SNOWFLAKE_PROPERTIES)
+    execute_snowflake_query(
+        f"TRUNCATE TABLE {SNOWFLAKE_TARGET_SONG_TABLE};", SNOWFLAKE_PROPERTIES
+    )
 
     # SQL 쿼리 (executemany 사용)
     insert_query = f"""
@@ -86,25 +94,35 @@ def process_song_counts(**kwargs):
     """
 
     # DataFrame을 리스트로 변환 후 executemany 실행
-    execute_snowflake_query(insert_query, SNOWFLAKE_PROPERTIES, data=song_counts.values.tolist())
+    execute_snowflake_query(
+        insert_query, SNOWFLAKE_PROPERTIES, data=song_counts.values.tolist()
+    )
 
     print(f"Data written to {SNOWFLAKE_TARGET_SONG_TABLE} in Snowflake.")
 
+
 def process_artist_counts(**kwargs):
-    SNOWFLAKE_PROPERTIES['schema'] = SNOWFLAKE_TARGET_SCHEMA
-    ti = kwargs['ti']
-    df = ti.xcom_pull(task_ids='extract_data')
+    SNOWFLAKE_PROPERTIES["schema"] = SNOWFLAKE_TARGET_SCHEMA
+    ti = kwargs["ti"]
+    df = ti.xcom_pull(task_ids="extract_data")
     if df is None or df.empty:
-        raise AirflowFailException("No data available for processing artist counts.")
-    
-    artist_counts = df.groupby("ARTIST").size().reset_index(name="artist_count")
-    execute_snowflake_query(f"TRUNCATE TABLE {SNOWFLAKE_TARGET_ARTIST_TABLE};", SNOWFLAKE_PROPERTIES)
+        raise AirflowFailException(
+            "No data available for processing artist counts.")
+
+    artist_counts = df.groupby(
+        "ARTIST").size().reset_index(name="artist_count")
+    execute_snowflake_query(
+        f"TRUNCATE TABLE {SNOWFLAKE_TARGET_ARTIST_TABLE};",
+        SNOWFLAKE_PROPERTIES)
     insert_query = f"""
         INSERT INTO {SNOWFLAKE_TARGET_ARTIST_TABLE} (ARTIST, artist_count)
         VALUES (%s, %s)
     """
-    execute_snowflake_query(insert_query, SNOWFLAKE_PROPERTIES, artist_counts.values.tolist())
+    execute_snowflake_query(
+        insert_query, SNOWFLAKE_PROPERTIES, artist_counts.values.tolist()
+    )
     print(f"Data written to {SNOWFLAKE_TARGET_ARTIST_TABLE} in Snowflake.")
+
 
 # DAG 설정
 default_args = {
@@ -151,4 +169,5 @@ process_artist_task = PythonOperator(
     dag=dag,
 )
 
-trigger_dag_task >> extract_data_task >> [process_song_task, process_artist_task]
+trigger_dag_task >> extract_data_task >> [
+    process_song_task, process_artist_task]
