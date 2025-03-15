@@ -9,6 +9,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
+from scripts.load_spotify_data import * 
+
 TODAY = datetime.now().strftime("%Y-%m-%d")
 
 FILE_PATH = f"data/spotify_crawling_data{TODAY}.csv"
@@ -23,14 +25,15 @@ def make_dataframe():
 
 
 # 크롤링 데이터를 csv로 저장
-def save_as_csv_file(df):
+def save_as_csv_file(df, logical_date):
 
     file_path = f"data/spotify_crawling_data_{TODAY}.csv"
 
     df.to_csv(file_path, encoding="utf-8", mode="w", header=True, index=False)
+    load_s3_bucket(f'spotify_crawling_data_{logical_date}.csv')
 
 
-def data_crawling():
+def data_crawling(logical_date):
 
     # retry 시, 크롤링은 성공한 상태라면 건너뜀
     if os.path.exists(FILE_PATH):
@@ -113,4 +116,4 @@ def data_crawling():
             except Exception as e:
                 print(f"error: {e}")
 
-        save_as_csv_file(global_top50_df)
+        save_as_csv_file(global_top50_df, logical_date)
