@@ -7,8 +7,6 @@ from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
                                StructType)
 from spark_utils import execute_snowflake_query, spark_session_builder
 
-from airflow.models import Variable
-
 load_dotenv()
 
 # SNOW_FLAKE 설정

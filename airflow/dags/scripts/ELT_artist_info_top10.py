@@ -6,9 +6,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, current_date, regexp_replace, split, udf
 from pyspark.sql.types import ArrayType, StringType, StructField, StructType
 
-from airflow.models import Variable
-
-LAST_FM_API_KEY = Variable.get("LAST_FM_API_KEY")
+LAST_FM_API_KEY = os.getenv("LAST_FM_API_KEY")
 
 BUCKET_NAME = "de5-s4tify"
 OBJECT_NAME = "raw_data"

@@ -1,31 +1,22 @@
+import os
 from datetime import datetime
 
-import snowflake.connector
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 from pyspark.sql import SparkSession
 
-from airflow.models import Variable
-
-SNOWFLAKE_USER = Variable.get("SNOWFLAKE_USER")
-SNOWFLKAE_USER_PWD = Variable.get("SNOWFLAKE_PASSWORD")
-SNOWFLAKE_ACCOUNT = Variable.get("SNOWFLAKE_ACCOUNT")
-SNOWFLAKE_URL = Variable.get("SNOWFLAKE_URL")
-SNOWFLAKE_DB = "S4TIFY"
-SNOWFLAKE_SCHEMA = "RAW_DATA"
-
-AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
-
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 
 snowflake_options = {
-    "sfURL": SNOWFLAKE_URL,
-    "sfDatabase": SNOWFLAKE_DB,
-    "sfSchema": SNOWFLAKE_SCHEMA,
-    "sfWarehouse": "COMPUTE_WH",
-    "sfRole": "ANALYTICS_USERS",
-    "sfUser": SNOWFLAKE_USER,
-    "sfPassword": SNOWFLKAE_USER_PWD,
+    "sfURL": f"{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com",
+    "sfDatabase": os.getenv("SNOWFLAKE_DB"),
+    "sfSchema": os.getenv("SNOWFLAKE_SCHEMA"),
+    "sfWarehouse": os.getenv("SNOWFLAKE_WH"),
+    "sfRole": os.getenv("SNOWFLAKE_ROLE"),
+    "sfUser": os.getenv("SNOWFLAKE_USER"),
+    "sfPassword": os.getenv("SNOWFLAKE_PASSWORD"),
 }
 
 
@@ -47,22 +38,10 @@ def create_spark_session(app_name: str):
     return spark
 
 
-def create_snowflake_conn():
-    conn = snowflake.connector.connect(
-        user=SNOWFLAKE_USER,
-        password=SNOWFLKAE_USER_PWD,
-        account=SNOWFLAKE_ACCOUNT,
-        warehouse="COMPUTE_WH",
-        database=SNOWFLAKE_DB,
-        schema=SNOWFLAKE_SCHEMA,
-    )
-
-    return conn
-
-
 def create_snowflake_table(sql):
 
-    conn = create_snowflake_conn()
+    hook = SnowflakeHook(snowflake_conn_id="SNOWFLAKE_CONN", schema="RAW_DATA")
+    conn = hook.get_conn()
     cur = conn.cursor()
 
     try:
