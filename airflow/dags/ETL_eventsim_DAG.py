@@ -41,7 +41,7 @@ start_task = DummyOperator(task_id="start", dag=dag)
 # SparkSubmitOperator: Spark에서 S3 데이터를 처리하고 Snowflake에 MERGE
 spark_job = SparkSubmitOperator(
     task_id="spark_process_s3_upsert",
-    application="/opt/airflow/dags/scripts/eventsim_ETL_script.py",
+    application="/opt/airflow/dags/scripts/ETL_eventsim_script.py",
     conn_id="spark_conn",
     application_args=[
         S3_BUCKET,
