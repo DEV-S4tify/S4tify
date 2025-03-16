@@ -1,8 +1,8 @@
 import sys
 from datetime import datetime
 
-from dags.plugins.spark_snowflake_conn import create_spark_session
 from dags.plugins.snowflake_utils import execute_snowflake_query
+from dags.plugins.spark_snowflake_conn import create_spark_session
 from dags.plugins.variables import SNOWFLAKE_PROPERTIES, snowflake_options
 
 # SNOW_FLAKE 설정

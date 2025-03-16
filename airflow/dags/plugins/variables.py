@@ -34,9 +34,16 @@ snowflake_gold_options = {
 SPARK_JAR_DIR = os.environ.get("SPARK_JAR_DIR")
 SPARK_JARS = ",".join(
     [
-        os.path.join(SPARK_JAR_DIR, "snowflake-jdbc-3.13.33.jar"),
-        os.path.join(SPARK_JAR_DIR, "spark-snowflake_2.12-2.12.0-spark_3.4.jar"),
-        os.path.join(SPARK_JAR_DIR, "hadoop-aws-3.3.4.jar"),
-        os.path.join(SPARK_JAR_DIR, "aws-java-sdk-bundle-1.12.262.jar"),
-    ]
-)
+        os.path.join(
+            SPARK_JAR_DIR,
+            "snowflake-jdbc-3.13.33.jar"),
+        os.path.join(
+            SPARK_JAR_DIR,
+            "spark-snowflake_2.12-2.12.0-spark_3.4.jar"),
+        os.path.join(
+            SPARK_JAR_DIR,
+            "hadoop-aws-3.3.4.jar"),
+        os.path.join(
+            SPARK_JAR_DIR,
+            "aws-java-sdk-bundle-1.12.262.jar"),
+    ])

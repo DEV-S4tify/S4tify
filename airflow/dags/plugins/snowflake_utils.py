@@ -6,6 +6,7 @@ from pyspark.sql import SparkSession
 
 from airflow.exceptions import AirflowFailException
 
+
 def execute_snowflake_query(
     query: str, snowflake_options: dict, data=None, fetch=False
 ):

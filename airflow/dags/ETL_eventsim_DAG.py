@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
+from dags.plugins.variables import SPARK_JARS
+
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
-
-from dags.plugins.variables import SPARK_JARS
 
 # S3 설정
 S3_BUCKET = "s3a://de5-s4tify"

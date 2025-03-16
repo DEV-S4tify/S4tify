@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
 
-from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
+from dags.plugins.variables import SPARK_JARS
 from pyspark.sql import SparkSession
 
-from dags.plugins.variables import SPARK_JARS
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -20,6 +20,7 @@ snowflake_options = {
     "sfUser": os.getenv("SNOWFLAKE_USER"),
     "sfPassword": os.getenv("SNOWFLAKE_PASSWORD"),
 }
+
 
 def create_spark_session(app_name: str):
     # 만약 정의된 connection이 cluster라면 master를 spark master 주소로 변경

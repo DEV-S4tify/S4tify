@@ -1,12 +1,13 @@
 import os
 from datetime import timedelta
 
+from dags.plugins.variables import SPARK_JARS
+
 from airflow import DAG
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
-from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.providers.apache.spark.operators.spark_submit import \
+    SparkSubmitOperator
 from airflow.utils.dates import days_ago
-
-from dags.plugins.variables import SPARK_JARS
 
 # DAG 설정
 default_args = {
@@ -35,7 +36,7 @@ trigger_dag_task = TriggerDagRunOperator(
 spark_submit_task = SparkSubmitOperator(
     task_id="process_songs_and_artists_spark",
     application="dags/scripts/ELT_eventsim_script.py",
-    conn_id="spark_conn",  
+    conn_id="spark_conn",
     executor_memory="2g",
     driver_memory="1g",
     jars=SPARK_JARS,
