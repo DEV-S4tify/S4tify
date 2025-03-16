@@ -66,7 +66,7 @@ def get_arti_top10(logical_date, **kwargs):
         encoding="utf-8-sig",
         index=False)
     try:
-        load_s3_bucket(dir_name,object_name)
+        load_s3_bucket(dir_name, object_name)
         os.remove(f"data/{object_name}")
     except Exception as e:
         print(f"error: {e}")
@@ -111,7 +111,7 @@ def get_artist_info(logical_date, **kwargs):
         encoding="utf-8-sig",
         index=False)
     try:
-        load_s3_bucket(dir_name,object_name)
+        load_s3_bucket(dir_name, object_name)
         os.remove(f"data/{object_name}")
     except Exception as e:
         print(f"error: {e}")

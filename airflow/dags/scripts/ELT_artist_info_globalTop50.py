@@ -62,10 +62,9 @@ def transformation():
     )
 
     # 데이터 읽고 중복 제거
-    artist_info_df = extract(
-        "artist_info",
-        artist_info_schema).dropDuplicates(
-        ["artist_id"])
+    artist_info_df = extract("artist_info", artist_info_schema).dropDuplicates(
+        ["artist_id"]
+    )
     global_top50_df = extract("crawling_data", global_top50_schema)
 
     global_top50_df = global_top50_df.withColumn(

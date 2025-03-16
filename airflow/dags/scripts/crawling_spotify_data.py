@@ -25,12 +25,12 @@ def make_dataframe():
 
 # 크롤링 데이터를 csv로 저장
 def save_as_csv_file(df, logical_date):
-    
+
     dir_path = "crawling_data"
     file_path = f"data/spotify_crawling_data_{TODAY}.csv"
 
     df.to_csv(file_path, encoding="utf-8", mode="w", header=True, index=False)
-    load_s3_bucket(dir_path,f"spotify_crawling_data_{logical_date}.csv")
+    load_s3_bucket(dir_path, f"spotify_crawling_data_{logical_date}.csv")
 
 
 def data_crawling(logical_date):

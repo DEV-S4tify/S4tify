@@ -60,12 +60,12 @@ def transformation():
 
     # 데이터 읽어오고 중복 제거
     artist_top10_df = extract(
-        "artist_top10", artist_top10_schema
-    ).dropDuplicates(["song_id"])
-    artist_info_df = extract(
-        "artist_info",
-        artist_info_schema).dropDuplicates(
-        ["artist_id"])
+        "artist_top10",
+        artist_top10_schema).dropDuplicates(
+        ["song_id"])
+    artist_info_df = extract("artist_info", artist_info_schema).dropDuplicates(
+        ["artist_id"]
+    )
 
     artist_info_top10_df = artist_info_df.join(
         artist_top10_df, on="artist_id", how="outer"
