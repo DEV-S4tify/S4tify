@@ -30,6 +30,7 @@ SNOWFLAKE_OPTIONS = {
     "url": f'jdbc:snowflake://{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
 
+
 # Spark Session 생성 함수
 def spark_session_builder(app_name: str) -> SparkSession:
     return (
@@ -48,12 +49,13 @@ def spark_session_builder(app_name: str) -> SparkSession:
                             "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
         ) .getOrCreate())
 
-# snowflake connector 
+
+# snowflake connector
 def create_snowflake_conn():
     hook = SnowflakeHook(snowflake_conn_id="SNOWFLAKE_CONN", schema="RAW_DATA")
     conn = hook.get_conn()
     cur = conn.cursor()
-    return conn,cur
+    return conn, cur
 
 
 # snowflake connector
