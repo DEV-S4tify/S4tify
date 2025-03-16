@@ -192,11 +192,15 @@ with DAG(
 
     # DAG 실행 순서
     start >> clean_music_chart >> wait_task
-    wait_task >> [
+    (
+        wait_task
+        >> [
             genre_trend_analysis,
             artist_performance,
             new_songs_analysis,
             top10_stability,
             no1_song_duration,
             rank_change_analysis,
-    ] >> end
+        ]
+        >> end
+    )
