@@ -5,7 +5,7 @@ import snowflake.connector
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count, lit, when
 
-from airflow.models import Variable
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 # Spark JARs 설정
 SPARK_HOME = "/opt/spark/"
@@ -40,9 +40,9 @@ def spark_session_builder(app_name: str) -> SparkSession:
             "spark.hadoop.fs.s3a.impl",
             "org.apache.hadoop.fs.s3a.S3AFileSystem") .config(
                 "spark.hadoop.fs.s3a.access.key",
-                os.getenv("AWS_ACCESS_KEY")) .config(
+                os.getenv("AWS_ACCESS_KEY_ID")) .config(
                     "spark.hadoop.fs.s3a.secret.key",
-                    os.getenv("AWS_SECRET_KEY")) .config(
+                    os.getenv("AWS_SECRET_ACCESS_KEY")) .config(
                         "spark.hadoop.fs.s3a.endpoint",
                         "s3.amazonaws.com") .config(
                             "spark.hadoop.fs.s3a.aws.credentials.provider",
@@ -50,19 +50,18 @@ def spark_session_builder(app_name: str) -> SparkSession:
         ) .getOrCreate())
 
 
+# snowflake connector
+def create_snowflake_conn():
+    hook = SnowflakeHook(snowflake_conn_id="SNOWFLAKE_CONN", schema="RAW_DATA")
+    conn = hook.get_conn()
+    cur = conn.cursor()
+    return conn, cur
+
+
 # Snowflake에서 SQL 실행 함수
 def check_and_create_table():
     try:
-        conn = snowflake.connector.connect(
-            user=SNOWFLAKE_OPTIONS["user"],
-            password=SNOWFLAKE_OPTIONS["password"],
-            account=SNOWFLAKE_OPTIONS["account"],
-            database=SNOWFLAKE_OPTIONS["db"],
-            schema=SNOWFLAKE_OPTIONS["schema"],
-            warehouse=SNOWFLAKE_OPTIONS["warehouse"],
-            role=SNOWFLAKE_OPTIONS["role"],
-        )
-        cur = conn.cursor()
+        conn, cur = create_snowflake_conn()
 
         # 테이블 존재 여부 확인
         cur.execute(
@@ -113,16 +112,7 @@ def escape_quotes(value):
 # Snowflake에서 SQL 실행 함수
 def insert_data_into_snowflake(df, table_name):
     try:
-        conn = snowflake.connector.connect(
-            user=SNOWFLAKE_OPTIONS["user"],
-            password=SNOWFLAKE_OPTIONS["password"],
-            account=SNOWFLAKE_OPTIONS["account"],
-            database=SNOWFLAKE_OPTIONS["db"],
-            schema=SNOWFLAKE_OPTIONS["schema"],
-            warehouse=SNOWFLAKE_OPTIONS["warehouse"],
-            role=SNOWFLAKE_OPTIONS["role"],
-        )
-        cur = conn.cursor()
+        conn, cur = create_snowflake_conn()
 
         for row in df.collect():
             rank = "NULL" if row["rank"] is None else row["rank"]
