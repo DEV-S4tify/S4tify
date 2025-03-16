@@ -57,6 +57,7 @@ def create_snowflake_conn():
     cur = conn.cursor()
     return conn, cur
 
+
 # Snowflake에서 SQL 실행 함수
 def check_and_create_table():
     try:
