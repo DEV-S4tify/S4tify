@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
 
-from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
+from dags.plugins.variables import SPARK_JARS
 from pyspark.sql import SparkSession
+
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -10,7 +12,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 TODAY = datetime.now().strftime("%Y-%m-%d")
 
 snowflake_options = {
-    "sfURL": f"{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com",
+    "sfURL": f"{os.getenv('SNOWFLAKE_ACCOUNT')}.snowflakecomputing.com",
     "sfDatabase": os.getenv("SNOWFLAKE_DB"),
     "sfSchema": os.getenv("SNOWFLAKE_SCHEMA"),
     "sfWarehouse": os.getenv("SNOWFLAKE_WH"),
@@ -28,10 +30,7 @@ def create_spark_session(app_name: str):
         .config("spark.hadoop.fs.s3a.access.key", AWS_ACCESS_KEY_ID)
         .config("spark.hadoop.fs.s3a.secret.key", AWS_SECRET_ACCESS_KEY)
         .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
-        .config(
-            "spark.jars",
-            "/path/to/spark-snowflake_2.12-2.12.0-spark_3.4.jar,/path/to/snowflake-jdbc-3.13.33.jar",
-        )
+        .config("spark.jars", SPARK_JARS)
         .getOrCreate()
     )
 

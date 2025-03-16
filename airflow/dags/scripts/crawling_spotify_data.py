@@ -4,12 +4,11 @@ import time
 from datetime import datetime, timedelta
 
 import pandas as pd
+from scripts.load_spotify_data import *
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-
-from scripts.load_spotify_data import * 
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 
@@ -30,7 +29,7 @@ def save_as_csv_file(df, logical_date):
     file_path = f"data/spotify_crawling_data_{TODAY}.csv"
 
     df.to_csv(file_path, encoding="utf-8", mode="w", header=True, index=False)
-    load_s3_bucket(f'spotify_crawling_data_{logical_date}.csv')
+    load_s3_bucket(f"spotify_crawling_data_{logical_date}.csv")
 
 
 def data_crawling(logical_date):

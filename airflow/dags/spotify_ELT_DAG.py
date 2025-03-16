@@ -8,7 +8,6 @@ from airflow import DAG
 from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
 
-
 # Spakr JARs 설정
 SPARK_HOME = os.environ.get("SPARK_JAR_DIR")
 SPARK_JARS = ",".join(
@@ -19,7 +18,6 @@ SPARK_JARS = ",".join(
         os.path.join(SPARK_HOME, "aws-java-sdk-bundle-1.12.262.jar"),
     ]
 )
-
 
 
 # DAG 기본 설정

@@ -1,22 +1,14 @@
-import os
 from datetime import datetime, timedelta
+
+from dags.plugins.variables import SPARK_JARS
 
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
 
-# S3 및 Snowflake 설정
+# S3 설정
 S3_BUCKET = "s3a://de5-s4tify"
-# Spark JARs 설정
-SPARK_HOME = os.environ.get("SPARK_JAR_DIR")
-SPARK_JARS = ",".join(
-    [
-        os.path.join(SPARK_HOME, "snowflake-jdbc-3.9.2.jar"),
-        os.path.join(SPARK_HOME, "hadoop-aws-3.3.4.jar"),
-        os.path.join(SPARK_HOME, "aws-java-sdk-bundle-1.12.262.jar"),
-    ]
-)
 
 default_args = {
     "owner": "sanghyeok_boo",
@@ -41,7 +33,7 @@ start_task = DummyOperator(task_id="start", dag=dag)
 # SparkSubmitOperator: Spark에서 S3 데이터를 처리하고 Snowflake에 MERGE
 spark_job = SparkSubmitOperator(
     task_id="spark_process_s3_upsert",
-    application="/opt/airflow/dags/scripts/eventsim_ETL_script.py",
+    application="dags/scripts/ETL_eventsim_script.py",
     conn_id="spark_conn",
     application_args=[
         S3_BUCKET,
@@ -50,13 +42,6 @@ spark_job = SparkSubmitOperator(
     executor_memory="2g",
     driver_memory="1g",
     jars=SPARK_JARS,
-    conf={
-        "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
-        "spark.hadoop.fs.s3a.access.key": "{{ conn.aws_s3.login }}",
-        "spark.hadoop.fs.s3a.secret.key": "{{ conn.aws_s3.password }}",
-        "spark.hadoop.fs.s3a.endpoint": "s3.ap-northeast-2.amazonaws.com",
-        "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
-    },
     dag=dag,
 )
 

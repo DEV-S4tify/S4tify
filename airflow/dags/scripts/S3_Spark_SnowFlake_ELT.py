@@ -56,11 +56,19 @@ def create_snowflake_conn():
     return conn,cur
 
 
+# snowflake connector
+def create_snowflake_conn():
+    hook = SnowflakeHook(snowflake_conn_id="SNOWFLAKE_CONN", schema="RAW_DATA")
+    conn = hook.get_conn()
+    cur = conn.cursor()
+    return conn, cur
+
+
 # Snowflake에서 SQL 실행 함수
 def check_and_create_table():
     try:
-        conn,cur = create_snowflake_conn()
-        
+        conn, cur = create_snowflake_conn()
+
         # 테이블 존재 여부 확인
         cur.execute(
             f"""
@@ -110,7 +118,11 @@ def escape_quotes(value):
 # Snowflake에서 SQL 실행 함수
 def insert_data_into_snowflake(df, table_name):
     try:
+<<<<<<< HEAD
         conn,cur = create_snowflake_conn()
+=======
+        conn, cur = create_snowflake_conn()
+>>>>>>> 9018db5009557e6c07d87327e0ba562800efac79
 
         for row in df.collect():
             rank = "NULL" if row["rank"] is None else row["rank"]
