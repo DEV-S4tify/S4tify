@@ -47,16 +47,6 @@ with DAG(
         task_id="wait_one_minute",
         python_callable=wait_one_minute,
     )
-
-    # 추가: 대시보드 스키마 생성 (존재하지 않을 경우)
-    create_dashboard_schema = SnowflakeOperator(
-        task_id="create_dashboard_schema",
-        snowflake_conn_id="snowflake_conn",
-        sql="""
-            CREATE SCHEMA IF NOT EXISTS s4tify.analytics;
-        """,
-    )
-
     # Step 3: 대시보드용 ELT SQL 태스크들
 
     # 3-1. 장르별 인기곡 트렌드 분석 (수정됨)
@@ -202,16 +192,11 @@ with DAG(
 
     # DAG 실행 순서
     start >> clean_music_chart >> wait_task
-    # wait_task >> create_dashboard_schema >> [
-    (
-        wait_task
-        >> [
+    wait_task >> [
             genre_trend_analysis,
             artist_performance,
             new_songs_analysis,
             top10_stability,
             no1_song_duration,
             rank_change_analysis,
-        ]
-        >> end
-    )
+    ] >> end
