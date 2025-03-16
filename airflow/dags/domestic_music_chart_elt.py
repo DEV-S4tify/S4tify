@@ -81,10 +81,11 @@ with DAG(
             CREATE OR REPLACE TABLE s4tify.analytics.artist_performance AS
             SELECT 
                 artist, 
-                COUNT(title) AS total_songs, 
+                COUNT(DISTINCT title) AS total_songs,  -- 중복 제거
                 MIN(rank) AS best_rank, 
                 AVG(rank) AS avg_rank
             FROM s4tify.adhoc.music_chart_cleaned
+            WHERE time_date = (SELECT MAX(time_date) FROM s4tify.adhoc.music_chart_cleaned)  -- 최신 데이터만 사용
             GROUP BY artist
             ORDER BY best_rank;
         """
@@ -130,15 +131,17 @@ with DAG(
         sql="""
             CREATE OR REPLACE TABLE s4tify.analytics.no1_song_duration AS
             WITH no1_songs AS (
-                SELECT title, COUNT(*) AS weeks_at_no1
+                SELECT LOWER(title) AS title, COUNT(*) AS weeks_at_no1
                 FROM s4tify.raw_data.music_charts
                 WHERE rank = 1
-                GROUP BY title
+                GROUP BY LOWER(title)
             )
             SELECT 
                 title, 
-                weeks_at_no1
+                SUM(weeks_at_no1) AS weeks_at_no1
             FROM no1_songs
+            GROUP BY title
+            HAVING SUM(weeks_at_no1) >= 2
             ORDER BY weeks_at_no1 DESC;
         """
     )

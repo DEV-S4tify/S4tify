@@ -118,7 +118,7 @@ with DAG(
     "genie_chart_dag",
     default_args=default_args,
     schedule_interval="30 0 * * *",  # 매일 00:30 실행
-    catchup=True,
+    catchup=False,
 ) as dag:
 
     get_spotify_token_task = PythonOperator(
