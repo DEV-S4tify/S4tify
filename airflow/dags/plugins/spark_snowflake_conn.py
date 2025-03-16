@@ -64,12 +64,12 @@ def write_snowflake_spark_dataframe(table_name, df):
 
 
 def read_snowflake_spark_dataframe(spark, table_name):
-    
-    df = spark.read \
-        .format("snowflake") \
-        .options(**snowflake_options) \
-        .option("dbtable", table_name) \
+
+    df = (
+        spark.read.format("snowflake")
+        .options(**snowflake_options)
+        .option("dbtable", table_name)
         .load()
-        
-    
-    return df 
+    )
+
+    return df

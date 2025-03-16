@@ -6,7 +6,8 @@ import snowflake.connector
 from plugins.spark_snowflake_conn import *
 from pyspark.sql.functions import (col, current_date, explode, lit,
                                    regexp_replace, split, udf)
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType, ArrayType
+from pyspark.sql.types import (ArrayType, IntegerType, StringType, StructField,
+                               StructType)
 
 LAST_FM_API_KEY = os.getenv("LAST_FM_API_KEY")
 
@@ -77,25 +78,36 @@ def transformation():
 
     artist_info_top50_df = artist_info_top50_df.withColumn(
         "date_time", current_date())
-    
-    artist_info_top50_df =  artist_info_top50_df.withColumn("song_genre", add_song_genre_udf(col("artist_name"), col("title")))
+
+    artist_info_top50_df = artist_info_top50_df.withColumn(
+        "song_genre", add_song_genre_udf(col("artist_name"), col("title"))
+    )
 
     return artist_info_top50_df
 
+
 def add_song_genre(artist, track):
-    
+
     url = f"https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key={LAST_FM_API_KEY}&artist={artist}&track={track}&format=json"
     print(url)
-    
+
     try:
         response = requests.get(url).json()
-        return [genre['name'] for genre in response.get('track', {}).get('toptags', {}).get('tag', [])]
+        return [
+            genre["name"] for genre in response.get(
+                "track",
+                {}).get(
+                "toptags",
+                {}).get(
+                "tag",
+                [])]
     except requests.exceptions.RequestException as e:
         print(f"API 요청 오류: {e}")
         return ["API Error"]
     except KeyError:
         return ["Unknown"]
-    
+
+
 add_song_genre_udf = udf(add_song_genre, ArrayType(StringType()))
 
 
@@ -110,14 +122,22 @@ def extract(file_name, schema):
     )
 
     if file_name == "crawling_data":
-        df = (
-            df.withColumn(
-                "artist", split(
-                    regexp_replace(
-                        col("artist"), r"[\[\]']", ""), ", ")) .withColumn(
-                "artist_id", split(
-                    regexp_replace(
-                        col("artist_id"), r"[\[\]']", ""), ", "), ) )
+        df = df.withColumn(
+            "artist",
+            split(
+                regexp_replace(
+                    col("artist"),
+                    r"[\[\]']",
+                    ""),
+                ", ")).withColumn(
+            "artist_id",
+            split(
+                regexp_replace(
+                    col("artist_id"),
+                    r"[\[\]']",
+                    ""),
+                ", "),
+        )
     if file_name == "artist_info":
         df = df.withColumn(
             "artist_genre", regexp_replace(df["artist_genre"], "[\\[\\]']", "")
@@ -126,9 +146,7 @@ def extract(file_name, schema):
             "artist_genre", split(df["artist_genre"], ", ")
         )  # 쉼표 기준으로 배열 변환
         df = df.withColumnRenamed("artist", "artist_name")
-        
-        
-    
+
     df.show()
 
     return df
