@@ -98,13 +98,7 @@ def extract(file_name, schema):
                         col("artist"), r"[\[\]']", ""), ", ")) .withColumn(
                 "artist_id", split(
                     regexp_replace(
-                        col("artist_id"), r"[\[\]']", ""), ", "), ) .fillna(
-                {
-                    "title": ""}) .withColumn(
-                "artist", when(
-                    col("artist").isNull(), lit(
-                        [""])).otherwise(
-                    col("artist")), ))
+                        col("artist_id"), r"[\[\]']", ""), ", "), ) )
     if file_name == "artist_info":
         df = df.withColumn(
             "artist_genre", regexp_replace(df["artist_genre"], "[\\[\\]']", "")
@@ -113,6 +107,10 @@ def extract(file_name, schema):
             "artist_genre", split(df["artist_genre"], ", ")
         )  # 쉼표 기준으로 배열 변환
         df = df.withColumnRenamed("artist", "artist_name")
+        
+        
+    
+    df.show()
 
     return df
 
