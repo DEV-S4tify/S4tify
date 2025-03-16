@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta
 
 from airflow import DAG
@@ -6,18 +5,10 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
 
-# S3 및 Snowflake 설정
+from dags.plugins.variables import SPARK_JARS
+
+# S3 설정
 S3_BUCKET = "s3a://de5-s4tify"
-# Spark JARs 설정
-SPARK_JAR_DIR = os.environ.get("SPARK_JAR_DIR")
-SPARK_JARS = ",".join(
-    [
-        os.path.join(SPARK_JAR_DIR, "snowflake-jdbc-3.13.33.jar"),
-        os.path.join(SPARK_JAR_DIR, "spark-snowflake_2.12-2.12.0-spark_3.4.jar"),
-        os.path.join(SPARK_JAR_DIR, "hadoop-aws-3.3.4.jar"),
-        os.path.join(SPARK_JAR_DIR, "aws-java-sdk-bundle-1.12.262.jar"),
-    ]
-)
 
 default_args = {
     "owner": "sanghyeok_boo",

@@ -48,7 +48,6 @@ def execute_snowflake_query(
 
         if fetch:
             result = cur.fetchall()  # 데이터 가져오기
-            print("result: " + result)
             if cur.description:  # 컬럼 정보가 존재할 경우에만 DataFrame 생성
                 df = pd.DataFrame(
                     result, columns=[
