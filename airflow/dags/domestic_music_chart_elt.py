@@ -131,18 +131,24 @@ with DAG(
         sql="""
             CREATE OR REPLACE TABLE s4tify.analytics.no1_song_duration AS
             WITH no1_songs AS (
-                SELECT LOWER(title) AS title, COUNT(*) AS weeks_at_no1
-                FROM s4tify.raw_data.music_charts
-                WHERE rank = 1
-                GROUP BY LOWER(title)
+                SELECT 
+                    LOWER(title) AS title, 
+                    YEAR("DATE") AS year, 
+                    WEEKOFYEAR("DATE") AS week
+                FROM (
+                    SELECT DISTINCT LOWER(title) as title, "DATE"
+                    FROM s4tify.raw_data.music_charts
+                    WHERE rank = 1
+                ) unique_no1
+                GROUP BY LOWER(title), YEAR("DATE"), WEEKOFYEAR("DATE")
             )
             SELECT 
                 title, 
-                SUM(weeks_at_no1) AS weeks_at_no1
+                COUNT(*) AS total_weeks_at_no1
             FROM no1_songs
             GROUP BY title
-            HAVING SUM(weeks_at_no1) >= 2
-            ORDER BY weeks_at_no1 DESC;
+            HAVING COUNT(*) >= 2
+            ORDER BY total_weeks_at_no1 DESC;
         """
     )
 
@@ -153,17 +159,27 @@ with DAG(
         sql="""
             CREATE OR REPLACE TABLE s4tify.analytics.rank_change_analysis AS
             WITH prev_chart AS (
-                SELECT * 
-                FROM s4tify.raw_data.music_charts 
-                WHERE "DATE" = (
-                    SELECT MAX("DATE") FROM s4tify.raw_data.music_charts 
-                    WHERE "DATE" < (SELECT MAX("DATE") FROM s4tify.raw_data.music_charts)
-                )
+                SELECT title, artist, rank 
+                FROM (
+                    SELECT title, artist, rank, "DATE",
+                        ROW_NUMBER() OVER (PARTITION BY title, artist ORDER BY "DATE" DESC) AS rn
+                    FROM s4tify.raw_data.music_charts
+                    WHERE "DATE" = (
+                        SELECT MAX("DATE") FROM s4tify.raw_data.music_charts 
+                        WHERE "DATE" < (SELECT MAX("DATE") FROM s4tify.raw_data.music_charts)
+                    )
+                ) 
+                WHERE rn = 1  -- 중복 제거: 가장 최근 데이터만 선택
             ),
             latest_chart AS (
-                SELECT * 
-                FROM s4tify.raw_data.music_charts 
-                WHERE "DATE" = (SELECT MAX("DATE") FROM s4tify.raw_data.music_charts)
+                SELECT title, artist, rank 
+                FROM (
+                    SELECT title, artist, rank, "DATE",
+                        ROW_NUMBER() OVER (PARTITION BY title, artist ORDER BY "DATE" DESC) AS rn
+                    FROM s4tify.raw_data.music_charts
+                    WHERE "DATE" = (SELECT MAX("DATE") FROM s4tify.raw_data.music_charts)
+                ) 
+                WHERE rn = 1  -- 중복 제거: 가장 최근 데이터만 선택
             )
             SELECT 
                 l.title, 
@@ -172,7 +188,8 @@ with DAG(
                 l.rank AS current_rank,
                 (p.rank - l.rank) AS rank_change
             FROM latest_chart l
-            LEFT JOIN prev_chart p ON l.title = p.title
+            LEFT JOIN prev_chart p ON l.title = p.title AND l.artist = p.artist
+            WHERE p.rank IS NOT NULL AND l.rank IS NOT NULL  -- NULL 값 제거
             ORDER BY rank_change DESC;
         """
     )
