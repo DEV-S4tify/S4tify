@@ -51,5 +51,13 @@ with DAG(
         jars=SPARK_JARS,
         dag=dag,
     )
+    
+    spotify_genre_count_table = SparkSubmitOperator(
+        task_id = 'spotify_genre_count_table',
+        application='dags/scripts/ELT_chart_genre_count.py',
+        conn_id = 'spark_conn',
+        jars=SPARK_JARS,
+        dag=dag
+    )
 
-    [artist_info_Top10_table, artist_info_globalTop50_table]
+    [artist_info_Top10_table, artist_info_globalTop50_table] >> spotify_genre_count_table

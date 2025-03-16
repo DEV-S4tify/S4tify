@@ -61,3 +61,15 @@ def write_snowflake_spark_dataframe(table_name, df):
     df.write.format("snowflake").options(**snowflake_options).option(
         "dbtable", f"{table_name}"
     ).mode("append").save()
+
+
+def read_snowflake_spark_dataframe(spark, table_name):
+    
+    df = spark.read \
+        .format("snowflake") \
+        .options(**snowflake_options) \
+        .option("dbtable", table_name) \
+        .load()
+        
+    
+    return df 
