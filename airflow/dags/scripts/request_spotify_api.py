@@ -29,6 +29,7 @@ def get_arti_top10(logical_date, **kwargs):
 
     task_instance = kwargs["ti"]
     arti_top10_list = []
+    dir_name = "artist_top10"
     object_name = f"spotify_artist_top10_{logical_date}.csv"
 
     # csv 파일 읽어오기
@@ -65,7 +66,7 @@ def get_arti_top10(logical_date, **kwargs):
         encoding="utf-8-sig",
         index=False)
     try:
-        load_s3_bucket(object_name)
+        load_s3_bucket(dir_name, object_name)
         os.remove(f"data/{object_name}")
     except Exception as e:
         print(f"error: {e}")
@@ -76,6 +77,7 @@ def get_artist_info(logical_date, **kwargs):
 
     task_instance = kwargs["ti"]
     artist_info_list = []
+    dir_name = "artist_info"
     object_name = f"spotify_artist_info_{logical_date}.csv"
 
     # csv 파일 읽어오기
@@ -109,7 +111,7 @@ def get_artist_info(logical_date, **kwargs):
         encoding="utf-8-sig",
         index=False)
     try:
-        load_s3_bucket(object_name)
+        load_s3_bucket(dir_name, object_name)
         os.remove(f"data/{object_name}")
     except Exception as e:
         print(f"error: {e}")
