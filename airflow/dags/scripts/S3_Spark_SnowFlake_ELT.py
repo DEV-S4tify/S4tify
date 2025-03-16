@@ -118,11 +118,7 @@ def escape_quotes(value):
 # Snowflake에서 SQL 실행 함수
 def insert_data_into_snowflake(df, table_name):
     try:
-<<<<<<< HEAD
-        conn,cur = create_snowflake_conn()
-=======
         conn, cur = create_snowflake_conn()
->>>>>>> 9018db5009557e6c07d87327e0ba562800efac79
 
         for row in df.collect():
             rank = "NULL" if row["rank"] is None else row["rank"]
