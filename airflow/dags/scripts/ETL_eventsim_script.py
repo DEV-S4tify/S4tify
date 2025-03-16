@@ -1,30 +1,15 @@
-import os
 import sys
 from datetime import datetime
 
-from dotenv import load_dotenv
-from pyspark.sql.types import (IntegerType, LongType, StringType, StructField,
-                               StructType)
-from spark_utils import (escape_quotes, execute_snowflake_query,
-                         spark_session_builder)
-
-load_dotenv()
+from dags.plugins.snowflake_utils import execute_snowflake_query
+from dags.plugins.spark_snowflake_conn import create_spark_session
+from dags.plugins.variables import SNOWFLAKE_PROPERTIES, snowflake_options
 
 # SNOW_FLAKE 설정
 SNOWFLAKE_TABLE = "EVENTSIM_LOG"
 SNOWFLAKE_TEMP_TABLE = "EVENTS_TABLE_TEMP"
 SNOWFLAKE_SCHEMA = "RAW_DATA"
-SNOWFLAKE_PROPERTIES = {
-    "user": os.environ.get("SNOWFLAKE_USER_BSH"),
-    "password": os.environ.get("SNOWFLAKE_PASSWORD_BSH"),
-    "account": os.environ.get("SNOWFLAKE_ACCOUNT"),
-    "db": os.environ.get("SNOWFLAKE_DB", "S4TIFY"),
-    "warehouse": os.environ.get("SNOWFLAKE_WH", "COMPUTE_WH"),
-    "schema": SNOWFLAKE_SCHEMA if SNOWFLAKE_SCHEMA else "RAW_DATA",
-    "role": os.environ.get("SNOWFLAKE_ROLE", "ANALYTICS_USERS"),
-    "driver": "net.snowflake.client.jdbc.SnowflakeDriver",
-    "url": f'jdbc:snowflake://{os.environ.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
-}
+
 S3_BUCKET = sys.argv[1]
 DATA_INTERVAL_START = sys.argv[2]
 # 날짜 변환 (data_interval_start -> year/month/day 형식)
@@ -34,7 +19,7 @@ month = date_obj.strftime("%m")
 day = date_obj.strftime("%d")
 
 # -------------------------------------------------
-spark = spark_session_builder("app")
+spark = create_spark_session("etl_streaming_session")
 
 # S3에서 데이터 읽어오기
 df = spark.read.json(
@@ -70,10 +55,7 @@ CREATE TABLE IF NOT EXISTS {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TABLE} (
 );
 """
 execute_snowflake_query(create_table_sql, SNOWFLAKE_PROPERTIES)
-print("Create Table")
 
-# -----------------------UPSERT----------------------
-# Snowflake TEMP 테이블에 데이터 적재
 create_temp_table_sql = f"""
 CREATE TABLE IF NOT EXISTS {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE} (
     song STRING,
@@ -85,18 +67,10 @@ CREATE TABLE IF NOT EXISTS {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE} (
 );
 """
 execute_snowflake_query(create_temp_table_sql, SNOWFLAKE_PROPERTIES)
-print("TEMP 테이블 확인 완료")
-
-# TEMP 테이블에 데이터 INSERT
-# data_to_insert = [tuple(row) for row in df_clean.collect()]
-# for row in data_to_insert:
-#     insert_temp_table_sql = f"""
-#     INSERT INTO {SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE} (song, artist, location, sessionId, userId, ts)
-#     VALUES (%s, %s, %s, %s, %s, %s)
-#     """
-
-#     execute_snowflake_query(insert_temp_table_sql, SNOWFLAKE_PROPERTIES, data=row)
-df_clean.write.format("jdbc").options(**SNOWFLAKE_PROPERTIES).option(
+print("테이블 생성 완료")
+# -----------------------UPSERT----------------------
+# Snowflake TEMP 테이블에 데이터 적재
+df_clean.write.format("snowflake").options(**snowflake_options).option(
     "dbtable", f"{SNOWFLAKE_SCHEMA}.{SNOWFLAKE_TEMP_TABLE}"
 ).mode("overwrite").save()
 print("TEMP 테이블 적재 완료")
