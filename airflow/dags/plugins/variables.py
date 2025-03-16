@@ -12,7 +12,7 @@ SNOWFLAKE_PROPERTIES = {
     "url": f'jdbc:snowflake://{os.environ.get("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com',
 }
 snowflake_options = {
-    "sfURL": f"{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com",
+    "sfURL": f"{os.getenv('SNOWFLAKE_ACCOUNT')}.snowflakecomputing.com",
     "sfDatabase": os.getenv("SNOWFLAKE_DB"),
     "sfSchema": os.getenv("SNOWFLAKE_SCHEMA"),
     "sfWarehouse": os.getenv("SNOWFLAKE_WH"),
@@ -22,7 +22,7 @@ snowflake_options = {
 }
 
 snowflake_gold_options = {
-    "sfURL": f"{os.getenv("SNOWFLAKE_ACCOUNT")}.snowflakecomputing.com",
+    "sfURL": f"{os.getenv('SNOWFLAKE_ACCOUNT')}.snowflakecomputing.com",
     "sfDatabase": os.getenv("SNOWFLAKE_DB"),
     "sfSchema": "ANALYTICS",
     "sfWarehouse": os.getenv("SNOWFLAKE_WH"),
