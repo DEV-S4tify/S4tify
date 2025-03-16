@@ -6,42 +6,6 @@ from pyspark.sql import SparkSession
 
 from airflow.exceptions import AirflowFailException
 
-# Spark JARs 설정
-# SPARK_HOME 설정
-SPARK_HOME = "/opt/spark"
-os.environ["SPARK_HOME"] = SPARK_HOME
-
-# JAR 경로 설정
-SPARK_JARS_DIR = os.path.join(SPARK_HOME, "jars")
-SPARK_JARS_LIST = [
-    "snowflake-jdbc-3.9.2.jar",
-    "hadoop-aws-3.3.4.jar",
-    "aws-java-sdk-bundle-1.12.262.jar",
-]
-SPARK_JARS = ",".join([os.path.join(SPARK_JARS_DIR, jar)
-                      for jar in SPARK_JARS_LIST])
-
-
-# Spark Session builder
-def spark_session_builder(app_name: str) -> SparkSession:
-    """_summary_
-        spark session builder for AWS S3 and Snowflake
-    Args:
-        app_name (str): spark session anme
-
-    Returns:
-        SparkSession
-    """
-    return (
-        SparkSession.builder.appName(f"{app_name}") .config(
-            "spark.jars",
-            SPARK_JARS) .config(
-            "spark.driver.extraClassPath",
-            "/opt/spark/jars/snowflake-jdbc-3.9.2.jar") .config(
-                "spark.executor.extraClassPath",
-            SPARK_JARS) .getOrCreate())
-
-
 def execute_snowflake_query(
     query: str, snowflake_options: dict, data=None, fetch=False
 ):

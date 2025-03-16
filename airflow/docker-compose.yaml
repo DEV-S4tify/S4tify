@@ -85,6 +85,8 @@ x-airflow-common:
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     AIRFLOW_CONN_AWS_S3: aws://$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY@$AWS_DEFAULT_REGION
+    AIRFLOW_CONN_SNOWFLAKE_CONN: snowflake://$SNOWFLAKE_USER:$SNOWFLAKE_PASSWORD@$SNOWFLAKE_SCHEMA/?account=$SNOWFLAKE_ACCOUNT&warehouse=$SNOWFLAKE_WH&database=$SNOWFLAKE_DB&schema=$SNOWFLAKE_SCHEMA&role=$SNOWFLAKE_ROLE
+    AIRFLOW_CONN_SPARK_CONN: Spark://spark://spark-master:7077/?deploy-mode=client&spark-binary=spark-submit
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- selenium pandas numpy webdriver-manager oauth2client gspread snowflake-connector-python pyspark python-dotenv apache-airflow-providers-apache-spark apache-airflow-providers-snowflake}
     # The following line can be used to set a custom config file, stored in the local config folder
     # If you want to use it, outcommen t it and replace airflow.cfg with the name of your config file
