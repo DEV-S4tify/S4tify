@@ -199,7 +199,8 @@ with DAG(
 
     # DAG 실행 순서
     start >> clean_music_chart >> wait_task
-    wait_task >> create_dashboard_schema >> [
+    #wait_task >> create_dashboard_schema >> [
+    wait_task >>[
         genre_trend_analysis, 
         artist_performance, 
         new_songs_analysis, 
