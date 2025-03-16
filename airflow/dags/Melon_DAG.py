@@ -117,7 +117,7 @@ with DAG(
     "melon_chart_dag",
     default_args=default_args,
     schedule_interval="0 1 * * *",  # 매일 01:00 실행
-    catchup=True,
+    catchup=False,
 ) as dag:
 
     get_spotify_token_task = PythonOperator(
