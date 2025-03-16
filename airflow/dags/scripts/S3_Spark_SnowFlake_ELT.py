@@ -55,15 +55,6 @@ def create_snowflake_conn():
     cur = conn.cursor()
     return conn,cur
 
-
-# snowflake connector
-def create_snowflake_conn():
-    hook = SnowflakeHook(snowflake_conn_id="SNOWFLAKE_CONN", schema="RAW_DATA")
-    conn = hook.get_conn()
-    cur = conn.cursor()
-    return conn, cur
-
-
 # Snowflake에서 SQL 실행 함수
 def check_and_create_table():
     try:
