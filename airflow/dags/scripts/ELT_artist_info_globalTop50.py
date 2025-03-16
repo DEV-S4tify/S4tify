@@ -63,10 +63,10 @@ def transformation():
 
     # 데이터 읽고 중복 제거
     artist_info_df = extract(
-        "spotify_artist_info",
+        "artist_info",
         artist_info_schema).dropDuplicates(
         ["artist_id"])
-    global_top50_df = extract("spotify_crawling_data", global_top50_schema)
+    global_top50_df = extract("crawling_data", global_top50_schema)
 
     global_top50_df = global_top50_df.withColumn(
         "artist_id", explode("artist_id"))
@@ -86,12 +86,12 @@ def extract(file_name, schema):
     spark = create_spark_session("artist_global_table")
 
     df = spark.read.csv(
-        f"s3a://{BUCKET_NAME}/{OBJECT_NAME}/{file_name}_{TODAY}.csv",
+        f"s3a://{BUCKET_NAME}/{OBJECT_NAME}/{file_name}/spotify_{file_name}_{TODAY}.csv",
         header=True,
         schema=schema,
     )
 
-    if file_name == "spotify_crawling_data":
+    if file_name == "crawling_data":
         df = (
             df.withColumn(
                 "artist", split(
@@ -106,7 +106,7 @@ def extract(file_name, schema):
                     col("artist").isNull(), lit(
                         [""])).otherwise(
                     col("artist")), ))
-    if file_name == "spotify_artist_info":
+    if file_name == "artist_info":
         df = df.withColumn(
             "artist_genre", regexp_replace(df["artist_genre"], "[\\[\\]']", "")
         )  # 불필요한 문자 제거
