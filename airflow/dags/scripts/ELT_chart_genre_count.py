@@ -10,22 +10,39 @@ from plugins.spark_snowflake_conn import *
 
 TODAY = datetime.today().strftime("%Y-%m-%d")
 
-def load():
+def load(sql, df, table_name):
+    
+    create_snowflake_table(sql)
+    write_snowflake_spark_dataframe(table_name, df)
+    
+
+def transformation_artist_genre_count():
+    artist_info_table = (
+        extract()
+        .filter(col('date_time')==TODAY)
+        .dropDuplicates(['artist_id'])
+        .withColumn("artist_genre",explode(col("artist_genre")))
+        )
+    
+    artist_genre_count = (
+        artist_info_table
+        .groupBy("artist_genre").agg(count("artist_genre").alias("count"))
+        .withColumn("date_time", current_date())
+    )
     
     sql = """
-    CREATE TABLE IF NOT EXISTS spotify_genre_count(
-        song_genre VARCHAR(100),
+    CREATE TABLE IF NOT EXISTS artist_genre_count(
+        artist_genre VARCHAR(100),
         genre_count int,
-        date_time DATE
+        date_tiem DATE
     )
     """
-    create_snowflake_table(sql)
-    transform_df = transformation()
-    write_snowflake_spark_dataframe('spotify_genre_count', transform_df)
+    
+    load(sql, artist_genre_count, 'artist_genre_count')
     
 
 
-def transformation():
+def transformation_genre_count():
     
     artist_info_table = (
         extract()
@@ -43,8 +60,16 @@ def transformation():
         .withColumn("date_time", current_date())
         .orderBy(desc("genre_count"))
     )
-
-    return spotify_genre_count
+    
+    sql = """
+    CREATE TABLE IF NOT EXISTS spotify_genre_count(
+        song_genre VARCHAR(100),
+        genre_count int,
+        date_time DATE
+    )
+    """
+    
+    load(sql, spotify_genre_count, 'spotify_genre_count')
     
 def extract():
     
@@ -55,4 +80,5 @@ def extract():
 
 
 if __name__ == "__main__": 
-    load()
+    transformation_genre_count()
+    transformation_artist_genre_count()

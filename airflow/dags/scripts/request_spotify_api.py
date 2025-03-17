@@ -146,6 +146,9 @@ def extract(url: str) -> Optional[Dict[str, Any]]:
     ):  # 토큰 만료시 재요청
         time.sleep(3)
         get_token()  # Variable에 저장된 token 변경
+        headers = {
+        "Authorization": f"Bearer {access_token}",
+        }
         response = requests.get(url, headers=headers)
         result = response.json()
 
