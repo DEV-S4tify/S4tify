@@ -1,14 +1,14 @@
-from pyspark.sql.functions import col, explode, from_json, count, current_date, desc
-from pyspark.sql.types import StringType, ArrayType
+from datetime import datetime
 
 import requests
 import snowflake.connector
-from datetime import datetime
-
-from plugins.spark_snowflake_conn import * 
-
+from plugins.spark_snowflake_conn import *
+from pyspark.sql.functions import (col, count, current_date, desc, explode,
+                                   from_json)
+from pyspark.sql.types import ArrayType, StringType
 
 TODAY = datetime.today().strftime("%Y-%m-%d")
+
 
 def load(sql, df, table_name):
     
@@ -17,6 +17,7 @@ def load(sql, df, table_name):
     
 
 def transformation_artist_genre_count():
+    
     artist_info_table = (
         extract()
         .filter(col('date_time')==TODAY)
@@ -31,11 +32,11 @@ def transformation_artist_genre_count():
     )
     
     sql = """
-    CREATE TABLE IF NOT EXISTS artist_genre_count(
-        artist_genre VARCHAR(100),
-        genre_count int,
-        date_tiem DATE
-    )
+        CREATE TABLE IF NOT EXISTS artist_genre_count(
+            artist_genre VARCHAR(100),
+            genre_count int,
+            date_tiem DATE
+        )
     """
     
     load(sql, artist_genre_count, 'artist_genre_count')
@@ -45,18 +46,21 @@ def transformation_artist_genre_count():
 def transformation_genre_count():
     
     artist_info_table = (
-        extract()
-        .filter(col('date_time')==TODAY)
-        .dropDuplicates(['title'])
-        .withColumn("song_genre", from_json(col("song_genre"), ArrayType(StringType())))
-        .withColumn("song_genre",explode(col("song_genre")))
-        )
-    
-    spotify_genre_count = artist_info_table.groupBy("song_genre").agg(count("song_genre").alias("genre_count"))
-    
+        extract() .filter(
+            col("date_time") == TODAY) .dropDuplicates(
+            ["title"]) .withColumn(
+                "song_genre",
+                from_json(
+                    col("song_genre"),
+                    ArrayType(
+                        StringType()))) .withColumn(
+                            "song_genre",
+                            explode(
+                                col("song_genre"))))
+
     spotify_genre_count = (
-        artist_info_table
-        .groupBy("song_genre").agg(count("song_genre").alias("genre_count"))
+        artist_info_table.groupBy("song_genre")
+        .agg(count("song_genre").alias("genre_count"))
         .withColumn("date_time", current_date())
         .orderBy(desc("genre_count"))
     )
@@ -72,12 +76,11 @@ def transformation_genre_count():
     load(sql, spotify_genre_count, 'spotify_genre_count')
     
 def extract():
-    
-    spark = create_spark_session("chart_genre_count_table")
-    table = read_snowflake_spark_dataframe(spark, 'artist_info_globalTop50')
-    
-    return table
 
+    spark = create_spark_session("chart_genre_count_table")
+    table = read_snowflake_spark_dataframe(spark, "artist_info_globalTop50")
+
+    return table
 
 if __name__ == "__main__": 
     transformation_genre_count()
