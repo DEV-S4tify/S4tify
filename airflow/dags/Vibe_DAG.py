@@ -114,7 +114,7 @@ with DAG(
     "vibe_chart_dag",
     default_args=default_args,
     schedule_interval="45 0 * * *",  # 매일 00:45 실행
-    catchup=True,
+    catchup=False,
 ) as dag:
 
     get_spotify_token_task = PythonOperator(

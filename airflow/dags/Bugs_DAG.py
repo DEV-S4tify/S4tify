@@ -119,7 +119,7 @@ with DAG(
     "bugs_chart_dag",
     default_args=default_args,
     schedule_interval="10 0 * * *",  # 매일 00:10 실행
-    catchup=True,
+    catchup=False,
 ) as dag:
 
     get_spotify_token_task = PythonOperator(
