@@ -147,7 +147,7 @@ def extract(url: str) -> Optional[Dict[str, Any]]:
         time.sleep(3)
         get_token()  # Variable에 저장된 token 변경
         headers = {
-        "Authorization": f"Bearer {access_token}",
+            "Authorization": f"Bearer {access_token}",
         }
         response = requests.get(url, headers=headers)
         result = response.json()
