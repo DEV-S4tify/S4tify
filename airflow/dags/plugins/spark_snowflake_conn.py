@@ -1,10 +1,13 @@
 import os
+import shutil
+
 from datetime import datetime
 
 from dags.plugins.variables import SPARK_JARS
 from pyspark.sql import SparkSession
 
 from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
+from snowflake.connector.pandas_tools import write_pandas
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -35,6 +38,27 @@ def create_spark_session(app_name: str):
     )
 
     return spark
+
+def write_pandas_snowflake(df, table_name):
+    
+    conn = SnowflakeHook(snowflake_conn_id="SNOWFLAKE_CONN", schema="RAW_DAT")
+
+    success, num_chunks, num_rows, output = write_pandas(conn, df, f"{table_name}")
+    
+
+def write_spark_csv(file_name, df):
+    temp_folder = f"data/{file_name}"
+    df.coalesce(1).write.mode("overwrite").csv(temp_folder, header=True)
+
+    # 저장된 디렉터리에서 CSV 파일 찾기
+    csv_file = [f for f in os.listdir(temp_folder) if f.startswith("part-")][0]
+
+    # 새 파일명 설정과 이동
+    output_path = f"data/{file_name}.csv"
+    shutil.move(os.path.join(temp_folder, csv_file), output_path)
+
+    # 임시 폴더 삭제
+    shutil.rmtree(temp_folder)
 
 
 def create_snowflake_table(sql):
