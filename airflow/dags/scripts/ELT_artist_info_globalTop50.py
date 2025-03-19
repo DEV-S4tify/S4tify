@@ -4,11 +4,10 @@ from datetime import datetime
 import requests
 import snowflake.connector
 from plugins.spark_snowflake_conn import *
-from pyspark.sql.functions import (col, current_date, explode, lit,
-                                   regexp_replace, split, concat_ws)
+from pyspark.sql.functions import (col, concat_ws, current_date, explode, lit,
+                                   regexp_replace, split)
 from pyspark.sql.types import (ArrayType, IntegerType, StringType, StructField,
                                StructType)
-
 
 BUCKET_NAME = "de5-s4tify"
 OBJECT_NAME = "raw_data"
@@ -17,7 +16,7 @@ TODAY = datetime.now().strftime("%Y-%m-%d")
 
 
 def load():
-    
+
     sql = """
         CREATE TABLE IF NOT EXISTS artist_info_globalTop50(
             artist_id VARCHAR(100),
@@ -32,10 +31,10 @@ def load():
     """
 
     create_snowflake_table(sql)
-    
+
     transform_df = transformation()
-    
-    write_spark_csv(f'join_artsit_info_chart_{TODAY}', transform_df)
+
+    write_spark_csv(f"join_artsit_info_chart_{TODAY}", transform_df)
 
 
 def transformation():
@@ -72,9 +71,13 @@ def transformation():
 
     artist_info_top50_df = artist_info_top50_df.withColumn(
         "date_time", current_date())
-    
-    artist_info_top50_df = artist_info_top50_df.withColumn("artist", concat_ws(",", col("artist")))
-    artist_info_top50_df = artist_info_top50_df.withColumn("artist_genre", concat_ws(",", col("artist_genre")))
+
+    artist_info_top50_df = artist_info_top50_df.withColumn(
+        "artist", concat_ws(",", col("artist"))
+    )
+    artist_info_top50_df = artist_info_top50_df.withColumn(
+        "artist_genre", concat_ws(",", col("artist_genre"))
+    )
 
     return artist_info_top50_df
 

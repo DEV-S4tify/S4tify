@@ -3,9 +3,9 @@ from datetime import datetime
 import requests
 from dags.plugins.spark_snowflake_conn import *
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, current_date, regexp_replace, split, concat_ws
+from pyspark.sql.functions import (col, concat_ws, current_date,
+                                   regexp_replace, split)
 from pyspark.sql.types import ArrayType, StringType, StructField, StructType
-
 
 BUCKET_NAME = "de5-s4tify"
 OBJECT_NAME = "raw_data"
@@ -74,8 +74,9 @@ def transformation():
     artist_info_top10_df = artist_info_top10_df.withColumn(
         "date_time", current_date())
 
-    
-    artist_info_top10_df = artist_info_top10_df.withColumn("artist_genre", concat_ws(",", col("artist_genre")))
+    artist_info_top10_df = artist_info_top10_df.withColumn(
+        "artist_genre", concat_ws(",", col("artist_genre"))
+    )
 
     return artist_info_top10_df
 
