@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
 
+from scripts.add_song_genre import *
 from scripts.crawling_spotify_data import *
 from scripts.load_spotify_data import *
 from scripts.request_spotify_api import *
 
 from airflow import DAG
+from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import \
     SparkSubmitOperator
 
@@ -52,6 +54,13 @@ with DAG(
         dag=dag,
     )
 
+    add_song_genre_col = PythonOperator(
+        task_id="add_song_genre_col",
+        python_callable=main,
+        op_kwargs={"logical_date": "{{ ds }}"},
+        dag=dag,
+    )
+
     spotify_genre_count_table = SparkSubmitOperator(
         task_id="spotify_genre_count_table",
         application="dags/scripts/ELT_chart_genre_count.py",
@@ -60,7 +69,11 @@ with DAG(
         dag=dag,
     )
 
-    [
-        artist_info_Top10_table,
-        artist_info_globalTop50_table,
-    ] >> spotify_genre_count_table
+    (
+        [
+            artist_info_Top10_table,
+            artist_info_globalTop50_table,
+        ]
+        >> add_song_genre_col
+        >> spotify_genre_count_table
+    )
